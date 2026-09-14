@@ -17,6 +17,12 @@ Previous eShop versions:
 ### Prerequisites
 
 1. Install a [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) that satisfies [`global.json`](global.json).
+   - **macOS with Homebrew**: Run the setup script:
+     ```console
+     ./scripts/setup-dotnet.sh
+     ```
+     This script automatically installs .NET 10 SDK using Homebrew and verifies the installation.
+
 2. Install the [Aspire CLI](https://aspire.dev/get-started/install-cli/) and verify that it is available:
 
     ```console
