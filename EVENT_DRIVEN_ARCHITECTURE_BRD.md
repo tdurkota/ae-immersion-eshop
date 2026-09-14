@@ -1,5 +1,23 @@
 # Business Requirements Document: Event-Driven Architecture (Ask 3)
 
+## Source Context & Tracability
+
+**Original Product Owner Asks (.NET Adventure Works):**
+
+1. **Ask 1: Decoupled Business Rules**
+   > "We need to support rapid experimentation on pricing, promotions, and fulfillment strategies. The current system is too rigid. **Re-architect so business rules can evolve without redeploying the entire system**."
+
+2. **Ask 2: Multi-Tenancy & Custom Isolation**
+   > "We're onboarding enterprise partners. **Each customer needs custom pricing rules, workflows, and data isolation.** We cannot fork the codebase."
+
+3. **Ask 3: Event-Driven Architecture (This BRD)**
+   > "Downstream systems want real-time events. We can't pause development or do a full rewrite. **Introduce event-driven behavior incrementally**."
+
+**WSJF Assessment Summary:**
+This BRD addresses Ask 3, assessed as the highest-priority initiative (Score: 3.5) due to optimal value-to-effort ratio. Event-driven architecture creates the foundation enabling both Ask 1 (business rules decoupling) and Ask 2 (multi-tenant isolation) while maintaining backward compatibility and requiring no full system rewrite.
+
+---
+
 ## Executive Summary
 Incrementally introduce event-driven capabilities to decouple services, enable real-time downstream integration, and unlock the architectural flexibility needed for Asks 1 & 2. No full rewrite. Phased rollout over 8–12 weeks, starting with the highest-ROI event sources (orders, inventory, payments).
 
