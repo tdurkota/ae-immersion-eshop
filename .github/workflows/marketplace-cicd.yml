@@ -120,6 +120,21 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Build and Push Container Images to ACR (Staging)
+        run: |
+          dotnet publish "${{ secrets.ASPIRE_MODULE_PATH }}" \
+            --configuration Release \
+            --output ./aspire-output \
+            -p:PublishProfile=DefaultContainer \
+            -p:PublishProtocol=FileSystem \
+            -p:ContainerImageName=${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io/eshop \
+            -p:ContainerRegistry=https://${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io \
+            -p:ContainerImageTag=staging-latest
+        env:
+          AZURE_CONTAINER_REGISTRY_USERNAME: ${{ secrets.ACR_USERNAME }}
+          AZURE_CONTAINER_REGISTRY_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+        continue-on-error: false
+
       - name: Deploy to Azure Container Apps (Staging)
         run: |
           aspire publish --from-module ${{ secrets.ASPIRE_MODULE_PATH }} \
@@ -164,6 +179,21 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Build and Push Container Images to ACR (Production)
+        run: |
+          dotnet publish "${{ secrets.ASPIRE_MODULE_PATH }}" \
+            --configuration Release \
+            --output ./aspire-output \
+            -p:PublishProfile=DefaultContainer \
+            -p:PublishProtocol=FileSystem \
+            -p:ContainerImageName=${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io/eshop \
+            -p:ContainerRegistry=https://${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io \
+            -p:ContainerImageTag=production-latest
+        env:
+          AZURE_CONTAINER_REGISTRY_USERNAME: ${{ secrets.ACR_USERNAME }}
+          AZURE_CONTAINER_REGISTRY_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+        continue-on-error: false
 
       - name: Deploy to Azure Container Apps (Production)
         run: |
