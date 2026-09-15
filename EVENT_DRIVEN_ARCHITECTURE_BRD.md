@@ -150,6 +150,139 @@ Incrementally introduce event-driven capabilities to decouple services, enable r
 
 ---
 
+### Epic 5: Seller Marketplace Integration Events
+**Acceptance Criteria:**
+- SellerRegistered, ProductListedBySeller, OrderCreatedIntegrationEvent (v2), SellerPayoutCreated, and SellerStatusChanged events documented with schema, ownership, and delivery expectations
+- Event versioning strategy explicitly follows append-only contracts and supports V1/V2 coexistence during migrations
+- All seller marketplace event schemas are registered in the event contract registry with version, status, producer, and consumer metadata
+- Example payloads published for each event to support partner onboarding and contract testing
+
+**Event Contract Registry Entries:**
+
+| Event | Version | Producer | Primary Consumers | Contract Status | Notes |
+| --- | --- | --- | --- | --- | --- |
+| SellerRegistered | v1 | Sellers.API | Webhooks.API, Analytics, Notifications | Active | Emitted when a seller completes onboarding and is eligible to list products |
+| ProductListedBySeller | v1 | Catalog.API | Search indexing, Recommendations, Webhooks.API | Active | Captures seller-owned catalog listing metadata and listing visibility |
+| OrderCreatedIntegrationEvent | v2 | Ordering.API | Payments, Fulfillment, Seller Operations, Webhooks.API | Active | Adds seller attribution, commission summary, and payout routing while v1 remains available |
+| SellerPayoutCreated | v1 | Payments.API | Finance, Ledger, Seller Portal | Active | Raised when seller payout batch item is created for settlement |
+| SellerStatusChanged | v1 | Sellers.API | Catalog.API, Risk/Compliance, Webhooks.API | Active | Communicates transitions such as Pending, Active, Suspended, and Deactivated |
+
+**Schema Summaries & Example Payloads:**
+
+1. **SellerRegistered v1**
+   - Required fields: `eventId`, `eventType`, `eventVersion`, `occurredAtUtc`, `sellerId`, `sellerName`, `email`, `status`, `tenantId`
+   - Example payload:
+
+   ```json
+   {
+     "eventId": "7f4d7b67-91c8-46b1-896a-54de8cb5f34a",
+     "eventType": "SellerRegistered",
+     "eventVersion": "v1",
+     "occurredAtUtc": "2026-09-15T19:30:00Z",
+     "sellerId": "SEL-1024",
+     "sellerName": "Northwind Outdoor Supply",
+     "email": "ops@northwindoutdoor.example",
+     "status": "Active",
+     "tenantId": "tenant-enterprise-a"
+   }
+   ```
+
+2. **ProductListedBySeller v1**
+   - Required fields: `eventId`, `eventType`, `eventVersion`, `occurredAtUtc`, `sellerId`, `productId`, `sku`, `listingStatus`, `price`, `currency`
+   - Example payload:
+
+   ```json
+   {
+     "eventId": "bb5c7d53-2905-44c0-91d5-4dd134058781",
+     "eventType": "ProductListedBySeller",
+     "eventVersion": "v1",
+     "occurredAtUtc": "2026-09-15T19:35:00Z",
+     "sellerId": "SEL-1024",
+     "productId": "PROD-5501",
+     "sku": "NW-TRAIL-01",
+     "listingStatus": "Published",
+     "price": 129.99,
+     "currency": "USD"
+   }
+   ```
+
+3. **OrderCreatedIntegrationEvent v2**
+   - Required fields: `eventId`, `eventType`, `eventVersion`, `occurredAtUtc`, `orderId`, `buyerId`, `sellerId`, `orderTotal`, `currency`, `commissionAmount`, `payoutAccountId`, `items`
+   - Migration note: `v1` remains published for existing consumers until all subscribers complete cutover to `v2`
+   - Example payload:
+
+   ```json
+   {
+     "eventId": "532c2bc2-1b34-4c8c-b63c-9814cf69fe2e",
+     "eventType": "OrderCreatedIntegrationEvent",
+     "eventVersion": "v2",
+     "occurredAtUtc": "2026-09-15T19:42:00Z",
+     "orderId": "ORD-900045",
+     "buyerId": "BUY-77",
+     "sellerId": "SEL-1024",
+     "orderTotal": 249.98,
+     "currency": "USD",
+     "commissionAmount": 24.99,
+     "payoutAccountId": "PAY-ACCT-204",
+     "items": [
+       {
+         "productId": "PROD-5501",
+         "sku": "NW-TRAIL-01",
+         "quantity": 2,
+         "unitPrice": 124.99
+       }
+     ]
+   }
+   ```
+
+4. **SellerPayoutCreated v1**
+   - Required fields: `eventId`, `eventType`, `eventVersion`, `occurredAtUtc`, `payoutId`, `sellerId`, `orderIds`, `grossAmount`, `commissionAmount`, `netAmount`, `currency`
+   - Example payload:
+
+   ```json
+   {
+     "eventId": "ce80c62e-e894-468f-9bf8-a744ca9cc31d",
+     "eventType": "SellerPayoutCreated",
+     "eventVersion": "v1",
+     "occurredAtUtc": "2026-09-15T20:05:00Z",
+     "payoutId": "PO-30018",
+     "sellerId": "SEL-1024",
+     "orderIds": [
+       "ORD-900045"
+     ],
+     "grossAmount": 249.98,
+     "commissionAmount": 24.99,
+     "netAmount": 224.99,
+     "currency": "USD"
+   }
+   ```
+
+5. **SellerStatusChanged v1**
+   - Required fields: `eventId`, `eventType`, `eventVersion`, `occurredAtUtc`, `sellerId`, `previousStatus`, `currentStatus`, `reasonCode`
+   - Example payload:
+
+   ```json
+   {
+     "eventId": "7f13610b-9940-4a8b-b535-71b7903cb23b",
+     "eventType": "SellerStatusChanged",
+     "eventVersion": "v1",
+     "occurredAtUtc": "2026-09-15T20:15:00Z",
+     "sellerId": "SEL-1024",
+     "previousStatus": "PendingReview",
+     "currentStatus": "Active",
+     "reasonCode": "VerificationApproved"
+   }
+   ```
+
+**Team Capabilities Required:**
+- Seller domain modeling
+- Cross-service contract governance
+- Backward-compatible integration design
+
+**Dependencies:** Epic 1, Epic 2, Epic 3, Epic 4
+
+---
+
 ## Team Capabilities Required (Summary)
 
 | Capability | Effort | Risk |

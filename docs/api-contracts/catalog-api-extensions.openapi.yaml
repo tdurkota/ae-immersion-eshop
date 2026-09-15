@@ -1,0 +1,637 @@
+openapi: 3.1.1
+info:
+  title: Catalog.API Seller Product Extensions
+  version: 1.0.0
+  description: |
+    OpenAPI extensions for Catalog.API to support seller-managed products and seller
+    attribution in customer-facing catalog responses.
+
+    Authorization
+    -------------
+    Seller product management endpoints require a Bearer JWT with the `seller` role.
+    The `{sellerId}` path parameter must match the authenticated seller identifier
+    claim in the JWT. Update and delete operations also require that the seller owns
+    the target product. Platform products are represented with `sellerId: null` and
+    `sellerName: null`, allowing clients to show an "Official Store" badge.
+servers:
+  - url: /
+tags:
+  - name: Seller Products
+    description: Seller-managed catalog product operations.
+  - name: Products
+    description: Customer-facing catalog product queries.
+security:
+  - bearerAuth: []
+x-authorization:
+  sellerRoleValidation:
+    role: seller
+    requiredJwtClaim: seller_id
+    pathParameter: sellerId
+    rules:
+      - The authenticated principal MUST have the `seller` role.
+      - The `seller_id` JWT claim MUST equal the `{sellerId}` path parameter.
+      - PUT and DELETE operations MUST verify the seller owns the product.
+      - Seller accounts that are not `active` cannot create new listings.
+paths:
+  /api/sellers/{sellerId}/products:
+    post:
+      tags:
+        - Seller Products
+      summary: Seller adds product
+      description: |
+        Creates a seller-owned catalog product.
+
+        Authorization requirements:
+        - Caller must have the `seller` role.
+        - `{sellerId}` must match the `seller_id` JWT claim.
+        - Seller account must be allowed to list products.
+      operationId: SellerAddProduct
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SellerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSellerProductRequest'
+            examples:
+              sellerProduct:
+                summary: Seller creates a product
+                value:
+                  name: Noise Cancelling Headphones
+                  description: Over-ear wireless headphones with active noise cancellation.
+                  price: 199.99
+                  imageUrl: https://cdn.contoso.example/catalog/headphones-1001.png
+                  inventory: 42
+                  categoryId: 3
+      responses:
+        '201':
+          description: Product created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellerProductResponse'
+              examples:
+                created:
+                  value:
+                    productId: 1001
+                    sellerId: 5f8b0d45-9fbe-4fe8-b7c0-52cc54f83682
+                    sellerName: Bob's Electronics
+                    name: Noise Cancelling Headphones
+                    description: Over-ear wireless headphones with active noise cancellation.
+                    price: 199.99
+                    imageUrl: https://cdn.contoso.example/catalog/headphones-1001.png
+                    inventory: 42
+                    categoryId: 3
+                    sellerStatus: active
+                    createdAt: 2026-09-15T22:10:00Z
+                    updatedAt: 2026-09-15T22:10:00Z
+        '400':
+          description: Validation failure such as missing required fields, negative price, or negative inventory.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidationProblemDetails'
+              examples:
+                invalidPrice:
+                  value:
+                    type: https://tools.ietf.org/html/rfc9110#section-15.5.1
+                    title: One or more validation errors occurred.
+                    status: 400
+                    errors:
+                      price:
+                        - Price must be greater than zero.
+                      inventory:
+                        - Inventory cannot be negative.
+        '403':
+          description: Caller is not authorized to add a product for the requested seller.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '409':
+          description: Seller listing request rejected because the seller account is suspended.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              examples:
+                suspendedSeller:
+                  value:
+                    type: https://httpstatuses.com/409
+                    title: Seller account suspended
+                    status: 409
+                    detail: This seller cannot create products while the seller account is suspended.
+    get:
+      tags:
+        - Seller Products
+      summary: List seller products
+      description: |
+        Returns a paginated view of products owned by the seller.
+
+        Authorization requirements:
+        - Caller must have the `seller` role.
+        - `{sellerId}` must match the `seller_id` JWT claim.
+      operationId: ListSellerProducts
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SellerId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/SellerProductSort'
+      responses:
+        '200':
+          description: Seller products returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSellerProductsResponse'
+              examples:
+                sellerProducts:
+                  value:
+                    page: 1
+                    pageSize: 20
+                    totalCount: 2
+                    items:
+                      - productId: 1001
+                        sellerId: 5f8b0d45-9fbe-4fe8-b7c0-52cc54f83682
+                        sellerName: Bob's Electronics
+                        name: Noise Cancelling Headphones
+                        description: Over-ear wireless headphones with active noise cancellation.
+                        price: 199.99
+                        imageUrl: https://cdn.contoso.example/catalog/headphones-1001.png
+                        inventory: 42
+                        categoryId: 3
+                        sellerStatus: active
+                        createdAt: 2026-09-15T22:10:00Z
+                        updatedAt: 2026-09-15T22:10:00Z
+                      - productId: 1002
+                        sellerId: 5f8b0d45-9fbe-4fe8-b7c0-52cc54f83682
+                        sellerName: Bob's Electronics
+                        name: USB-C Dock
+                        description: Multi-port docking station with dual display support.
+                        price: 149.5
+                        imageUrl: https://cdn.contoso.example/catalog/dock-1002.png
+                        inventory: 15
+                        categoryId: 5
+                        sellerStatus: active
+                        createdAt: 2026-09-10T18:45:00Z
+                        updatedAt: 2026-09-12T08:20:00Z
+        '403':
+          description: Caller is not authorized to view products for the requested seller.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /api/sellers/{sellerId}/products/{productId}:
+    put:
+      tags:
+        - Seller Products
+      summary: Seller updates own product
+      description: |
+        Updates a seller-owned product.
+
+        Authorization requirements:
+        - Caller must have the `seller` role.
+        - `{sellerId}` must match the `seller_id` JWT claim.
+        - The product must be owned by the authenticated seller.
+      operationId: SellerUpdateProduct
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SellerId'
+        - $ref: '#/components/parameters/ProductId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSellerProductRequest'
+            examples:
+              updateProduct:
+                value:
+                  name: Noise Cancelling Headphones Pro
+                  description: Updated model with improved battery life.
+                  price: 219.99
+                  imageUrl: https://cdn.contoso.example/catalog/headphones-1001-v2.png
+                  inventory: 40
+      responses:
+        '200':
+          description: Product updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellerProductResponse'
+        '403':
+          description: Caller is unauthorized or does not own the specified product.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Product not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    delete:
+      tags:
+        - Seller Products
+      summary: Seller removes product
+      description: |
+        Deletes a seller-owned product.
+
+        Authorization requirements:
+        - Caller must have the `seller` role.
+        - `{sellerId}` must match the `seller_id` JWT claim.
+        - The product must be owned by the authenticated seller.
+      operationId: SellerDeleteProduct
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SellerId'
+        - $ref: '#/components/parameters/ProductId'
+      responses:
+        '204':
+          description: Product deleted successfully.
+        '403':
+          description: Caller is unauthorized or does not own the specified product.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+        '404':
+          description: Product not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+  /api/products:
+    get:
+      tags:
+        - Products
+      summary: List products with seller attribution
+      description: |
+        Returns customer-visible products and supports filtering by seller. Each product
+        includes seller attribution so clients can render either an "Official Store"
+        badge for platform-owned items (`sellerId: null`) or a "Sold by: {sellerName}`
+        label for seller-owned items.
+      operationId: ListProducts
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/ProductSort'
+        - $ref: '#/components/parameters/ProductSellerIdFilter'
+        - $ref: '#/components/parameters/IncludeSellerName'
+      responses:
+        '200':
+          description: Products returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCatalogItemsResponse'
+              examples:
+                mixedCatalog:
+                  summary: Platform and seller products in one response
+                  value:
+                    page: 1
+                    pageSize: 20
+                    totalCount: 2
+                    items:
+                      - productId: 17
+                        name: eShop Hoodie
+                        description: Official eShop branded hoodie.
+                        price: 39.99
+                        imageUrl: https://cdn.contoso.example/catalog/hoodie-17.png
+                        inventory: 125
+                        categoryId: 8
+                        sellerId: null
+                        sellerName: null
+                        sellerStatus: active
+                      - productId: 1001
+                        name: Noise Cancelling Headphones
+                        description: Over-ear wireless headphones with active noise cancellation.
+                        price: 199.99
+                        imageUrl: https://cdn.contoso.example/catalog/headphones-1001.png
+                        inventory: 42
+                        categoryId: 3
+                        sellerId: 5f8b0d45-9fbe-4fe8-b7c0-52cc54f83682
+                        sellerName: Bob's Electronics
+                        sellerStatus: active
+        '400':
+          description: Invalid query parameter values.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    SellerId:
+      name: sellerId
+      in: path
+      required: true
+      description: Seller identifier. Must match the `seller_id` JWT claim for seller-authorized operations.
+      schema:
+        type: string
+        format: uuid
+    ProductId:
+      name: productId
+      in: path
+      required: true
+      description: Product identifier.
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+    Page:
+      name: page
+      in: query
+      required: false
+      description: One-based page number.
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        default: 1
+    PageSize:
+      name: pageSize
+      in: query
+      required: false
+      description: Number of records per page.
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        default: 20
+    SellerProductSort:
+      name: sort
+      in: query
+      required: false
+      description: Sort seller product results by `name`, `price`, or `date`.
+      schema:
+        type: string
+        enum:
+          - name
+          - price
+          - date
+        default: date
+    ProductSort:
+      name: sort
+      in: query
+      required: false
+      description: Sort product results by `name`, `price`, or `date`.
+      schema:
+        type: string
+        enum:
+          - name
+          - price
+          - date
+        default: date
+    ProductSellerIdFilter:
+      name: sellerId
+      in: query
+      required: false
+      description: Optional seller filter. When omitted, returns platform and seller products together.
+      schema:
+        type:
+          - string
+          - 'null'
+        format: uuid
+    IncludeSellerName:
+      name: includeSellerName
+      in: query
+      required: false
+      description: When `true`, ensures seller names are populated in the response when available.
+      schema:
+        type: boolean
+        default: true
+  schemas:
+    CreateSellerProductRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - description
+        - price
+        - imageUrl
+        - inventory
+        - categoryId
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        price:
+          type: number
+          format: decimal
+          exclusiveMinimum: 0
+        imageUrl:
+          type: string
+          format: uri
+        inventory:
+          type: integer
+          format: int32
+          minimum: 0
+        categoryId:
+          type: integer
+          format: int32
+          minimum: 1
+    UpdateSellerProductRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - description
+        - price
+        - imageUrl
+        - inventory
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        price:
+          type: number
+          format: decimal
+          exclusiveMinimum: 0
+        imageUrl:
+          type: string
+          format: uri
+        inventory:
+          type: integer
+          format: int32
+          minimum: 0
+    CatalogItem:
+      type: object
+      description: |
+        Updated catalog item schema with seller attribution. Platform-owned products use
+        `sellerId: null` and `sellerName: null`.
+      required:
+        - productId
+        - name
+        - price
+        - inventory
+        - categoryId
+        - sellerStatus
+      properties:
+        productId:
+          type: integer
+          format: int32
+        name:
+          type: string
+        description:
+          type:
+            - string
+            - 'null'
+        price:
+          type: number
+          format: decimal
+        imageUrl:
+          type:
+            - string
+            - 'null'
+          format: uri
+        inventory:
+          type: integer
+          format: int32
+        categoryId:
+          type: integer
+          format: int32
+        sellerId:
+          type:
+            - string
+            - 'null'
+          format: uuid
+          description: Nullable seller identifier. `null` means the product is platform-owned.
+        sellerName:
+          type:
+            - string
+            - 'null'
+          description: Nullable seller display name. `null` may be rendered as "Official Store" by clients.
+        sellerStatus:
+          $ref: '#/components/schemas/SellerStatus'
+    SellerProductResponse:
+      allOf:
+        - $ref: '#/components/schemas/CatalogItem'
+        - type: object
+          required:
+            - sellerId
+            - sellerName
+            - createdAt
+            - updatedAt
+          properties:
+            sellerId:
+              type: string
+              format: uuid
+            sellerName:
+              type: string
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+    PaginatedCatalogItemsResponse:
+      type: object
+      required:
+        - page
+        - pageSize
+        - totalCount
+        - items
+      properties:
+        page:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        totalCount:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CatalogItem'
+    PaginatedSellerProductsResponse:
+      type: object
+      required:
+        - page
+        - pageSize
+        - totalCount
+        - items
+      properties:
+        page:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        totalCount:
+          type: integer
+          format: int32
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SellerProductResponse'
+    SellerStatus:
+      type: string
+      description: |
+        Seller account state. Ordering rejects new orders when the seller status is not
+        `active`.
+      enum:
+        - active
+        - suspended
+        - inactive
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type:
+            - string
+            - 'null'
+          format: uri
+        title:
+          type:
+            - string
+            - 'null'
+        status:
+          type:
+            - integer
+            - 'null'
+          format: int32
+        detail:
+          type:
+            - string
+            - 'null'
+        instance:
+          type:
+            - string
+            - 'null'
+    ValidationProblemDetails:
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetails'
+        - type: object
+          properties:
+            errors:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string
