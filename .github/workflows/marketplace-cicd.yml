@@ -120,50 +120,14 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Build and Push Container Images to ACR (Staging)
-        run: |
-          # Array of service projects to containerize
-          SERVICES=(
-            "src/Identity.API/Identity.API.csproj"
-            "src/Basket.API/Basket.API.csproj"
-            "src/Catalog.API/Catalog.API.csproj"
-            "src/Ordering.API/Ordering.API.csproj"
-            "src/OrderProcessor/OrderProcessor.csproj"
-            "src/PaymentProcessor/PaymentProcessor.csproj"
-            "src/Webhooks.API/Webhooks.API.csproj"
-            "src/WebApp/WebApp.csproj"
-            "src/WebhookClient/WebhookClient.csproj"
-          )
-          
-          # Publish each service as a container image to ACR
-          for service in "${SERVICES[@]}"; do
-            serviceName=$(basename $(dirname "$service"))
-            echo "Publishing $serviceName as container image..."
-            
-            dotnet publish "$service" \
-              --configuration Release \
-              -p:PublishProfile=DefaultContainer \
-              -p:ContainerImageName=${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io/$serviceName \
-              -p:ContainerRegistry=https://${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io \
-              -p:ContainerImageTag=staging-latest
-          done
-        env:
-          AZURE_CONTAINER_REGISTRY_USERNAME: ${{ secrets.ACR_USERNAME }}
-          AZURE_CONTAINER_REGISTRY_PASSWORD: ${{ secrets.ACR_PASSWORD }}
-        continue-on-error: false
-
       - name: Deploy to Azure Container Apps (Staging)
         run: |
-          aspire publish --from-module ${{ secrets.ASPIRE_MODULE_PATH }} \
-            --provision-if-not-exists \
-            --subscription-id ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
-            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --location ${{ secrets.AZURE_LOCATION }} \
-            --environment-name eshop-staging
+          aspire deploy --non-interactive --from-module ${{ secrets.ASPIRE_MODULE_PATH }}
         env:
-          AZURE_CONTAINER_REGISTRY_ENDPOINT: https://${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io
-          AZURE_CONTAINER_REGISTRY_USERNAME: ${{ secrets.ACR_USERNAME }}
-          AZURE_CONTAINER_REGISTRY_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+          Azure__SubscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          Azure__ResourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          Azure__Location: ${{ secrets.AZURE_LOCATION }}
+          ASPIRE_ALLOW_UNSECURED_TRANSPORT: "true"
         continue-on-error: false
 
   deploy-production:
@@ -197,50 +161,14 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Build and Push Container Images to ACR (Production)
-        run: |
-          # Array of service projects to containerize
-          SERVICES=(
-            "src/Identity.API/Identity.API.csproj"
-            "src/Basket.API/Basket.API.csproj"
-            "src/Catalog.API/Catalog.API.csproj"
-            "src/Ordering.API/Ordering.API.csproj"
-            "src/OrderProcessor/OrderProcessor.csproj"
-            "src/PaymentProcessor/PaymentProcessor.csproj"
-            "src/Webhooks.API/Webhooks.API.csproj"
-            "src/WebApp/WebApp.csproj"
-            "src/WebhookClient/WebhookClient.csproj"
-          )
-          
-          # Publish each service as a container image to ACR
-          for service in "${SERVICES[@]}"; do
-            serviceName=$(basename $(dirname "$service"))
-            echo "Publishing $serviceName as container image..."
-            
-            dotnet publish "$service" \
-              --configuration Release \
-              -p:PublishProfile=DefaultContainer \
-              -p:ContainerImageName=${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io/$serviceName \
-              -p:ContainerRegistry=https://${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io \
-              -p:ContainerImageTag=production-latest
-          done
-        env:
-          AZURE_CONTAINER_REGISTRY_USERNAME: ${{ secrets.ACR_USERNAME }}
-          AZURE_CONTAINER_REGISTRY_PASSWORD: ${{ secrets.ACR_PASSWORD }}
-        continue-on-error: false
-
       - name: Deploy to Azure Container Apps (Production)
         run: |
-          aspire publish --from-module ${{ secrets.ASPIRE_MODULE_PATH }} \
-            --provision-if-not-exists \
-            --subscription-id ${{ secrets.AZURE_SUBSCRIPTION_ID }} \
-            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-            --location ${{ secrets.AZURE_LOCATION }} \
-            --environment-name eshop-production
+          aspire deploy --non-interactive --from-module ${{ secrets.ASPIRE_MODULE_PATH }}
         env:
-          AZURE_CONTAINER_REGISTRY_ENDPOINT: https://${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io
-          AZURE_CONTAINER_REGISTRY_USERNAME: ${{ secrets.ACR_USERNAME }}
-          AZURE_CONTAINER_REGISTRY_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+          Azure__SubscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          Azure__ResourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          Azure__Location: ${{ secrets.AZURE_LOCATION }}
+          ASPIRE_ALLOW_UNSECURED_TRANSPORT: "true"
         continue-on-error: false
 
   # TODO: Enable E2E tests after initial deployment is working
