@@ -18,6 +18,7 @@
     <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="$(AspireVersion)" />
     <PackageVersion Include="Aspire.Hosting.Redis" Version="$(AspireVersion)" />
     <PackageVersion Include="Aspire.Hosting.Yarp" Version="$(AspireVersion)" />
+    <PackageVersion Include="Aspire.Hosting.Testing" Version="$(AspireVersion)" />
     <PackageVersion Include="Aspire.Npgsql" Version="$(AspireVersion)" />
     <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(AspireVersion)" />
     <PackageVersion Include="Aspire.RabbitMQ.Client" Version="$(AspireVersion)" />
@@ -44,6 +45,7 @@
     <PackageVersion Include="MSTest" Version="4.0.2" />
     <!-- Version together with EF -->
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(DotnetPackagesVersion)" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="$(DotnetPackagesVersion)" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="$(DotnetPackagesVersion)" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
@@ -55,7 +57,7 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(DotnetPackagesVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(DotnetPackagesVersion)" />
     <!-- dotnet/extensions packages -->
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.8.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery.Yarp" Version="$(MicrosoftExtensionsVersion)" />
     <!-- Xabaril packages -->
@@ -82,6 +84,11 @@
     <PackageVersion Include="Grpc.AspNetCore" Version="$(GrpcVersion)" />
     <PackageVersion Include="Grpc.Net.ClientFactory" Version="$(GrpcVersion)" />
     <PackageVersion Include="Grpc.Tools" Version="2.80.0" PrivateAssets="All" />
+    <!-- Testing -->
+    <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.1" />
+    <PackageVersion Include="Testcontainers" Version="3.9.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="3.9.0" />
+    <PackageVersion Include="Testcontainers.RabbitMq" Version="3.9.0" />
     <!-- Miscellaneous -->
     <PackageVersion Include="Dapper" Version="2.1.35" />
     <PackageVersion Include="FluentValidation" Version="12.0.0" />
@@ -89,7 +96,6 @@
     <PackageVersion Include="Google.Protobuf" Version="3.34.1" />
     <PackageVersion Include="Microsoft.Web.LibraryManager.Build" Version="3.0.71" />
     <PackageVersion Include="System.Reflection.TypeExtensions" Version="4.7.0" />
-    <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.1" />
     <PackageVersion Include="IdentityModel" Version="7.0.0" />
     <PackageVersion Include="Scalar.AspNetCore" Version="2.8.6" />
     <!-- Before license change -->
