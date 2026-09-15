@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Testing -->
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" />
+    <PackageReference Include="Aspire.Hosting.Testing" />
+    
+    <!-- Database -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    
+    <!-- Fixtures & Builders -->
+    <PackageReference Include="Testcontainers" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="Testcontainers.RabbitMq" />
+  </ItemGroup>
+
+  <!-- Project references to services for integration -->
+  <ItemGroup>
+    <ProjectReference Include="../../src/eShop.ServiceDefaults/eShop.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+</Project>

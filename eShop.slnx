@@ -21,15 +21,26 @@
     <Project Path="src/ClientApp/ClientApp.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <!-- Infrastructure & Base Classes -->
+    <Project Path="tests/Core/Core.csproj" />
+
+    <!-- Unit Tests -->
     <Project Path="tests/Basket.UnitTests/Basket.UnitTests.csproj" />
-    <Project Path="tests/Basket.FunctionalTests/Basket.FunctionalTests.csproj" />
-    <Project Path="tests/Application.UnitTests/Application.UnitTests.csproj" />
-    <Project Path="tests/Catalog.FunctionalTests/Catalog.FunctionalTests.csproj" />
-    <Project Path="tests/Ordering.FunctionalTests/Ordering.FunctionalTests.csproj" />
     <Project Path="tests/Ordering.UnitTests/Ordering.UnitTests.csproj" />
-    <Project Path="tests/Webhooks.FunctionalTests/Webhooks.FunctionalTests.csproj" />
+    <Project Path="tests/Application.UnitTests/Application.UnitTests.csproj" />
     <Project Path="tests/eShop.AppHost.UnitTests/eShop.AppHost.UnitTests.csproj" />
     <Project Path="tests/ClientApp.UnitTests/ClientApp.UnitTests.csproj" />
+
+    <!-- API Contract Tests -->
+    <Project Path="tests/API.ContractTests/Basket.API.ContractTests/Basket.API.ContractTests.csproj" />
+    <Project Path="tests/API.ContractTests/Catalog.API.ContractTests/Catalog.API.ContractTests.csproj" />
+    <Project Path="tests/API.ContractTests/Ordering.API.ContractTests/Ordering.API.ContractTests.csproj" />
+
+    <!-- Integration Tests -->
+    <Project Path="tests/Basket.IntegrationTests/Basket.IntegrationTests.csproj" />
+    <Project Path="tests/Catalog.IntegrationTests/Catalog.IntegrationTests.csproj" />
+    <Project Path="tests/Ordering.IntegrationTests/Ordering.IntegrationTests.csproj" />
+    <Project Path="tests/Webhooks.FunctionalTests/Webhooks.FunctionalTests.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
