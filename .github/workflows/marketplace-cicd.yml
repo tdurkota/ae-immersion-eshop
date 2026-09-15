@@ -122,14 +122,31 @@ jobs:
 
       - name: Build and Push Container Images to ACR (Staging)
         run: |
-          dotnet publish "${{ secrets.ASPIRE_MODULE_PATH }}" \
-            --configuration Release \
-            --output ./aspire-output \
-            -p:PublishProfile=DefaultContainer \
-            -p:PublishProtocol=FileSystem \
-            -p:ContainerImageName=${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io/eshop \
-            -p:ContainerRegistry=https://${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io \
-            -p:ContainerImageTag=staging-latest
+          # Array of service projects to containerize
+          SERVICES=(
+            "src/Identity.API/Identity.API.csproj"
+            "src/Basket.API/Basket.API.csproj"
+            "src/Catalog.API/Catalog.API.csproj"
+            "src/Ordering.API/Ordering.API.csproj"
+            "src/OrderProcessor/OrderProcessor.csproj"
+            "src/PaymentProcessor/PaymentProcessor.csproj"
+            "src/Webhooks.API/Webhooks.API.csproj"
+            "src/WebApp/WebApp.csproj"
+            "src/WebhookClient/WebhookClient.csproj"
+          )
+          
+          # Publish each service as a container image to ACR
+          for service in "${SERVICES[@]}"; do
+            serviceName=$(basename $(dirname "$service"))
+            echo "Publishing $serviceName as container image..."
+            
+            dotnet publish "$service" \
+              --configuration Release \
+              -p:PublishProfile=DefaultContainer \
+              -p:ContainerImageName=${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io/$serviceName \
+              -p:ContainerRegistry=https://${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io \
+              -p:ContainerImageTag=staging-latest
+          done
         env:
           AZURE_CONTAINER_REGISTRY_USERNAME: ${{ secrets.ACR_USERNAME }}
           AZURE_CONTAINER_REGISTRY_PASSWORD: ${{ secrets.ACR_PASSWORD }}
@@ -182,14 +199,31 @@ jobs:
 
       - name: Build and Push Container Images to ACR (Production)
         run: |
-          dotnet publish "${{ secrets.ASPIRE_MODULE_PATH }}" \
-            --configuration Release \
-            --output ./aspire-output \
-            -p:PublishProfile=DefaultContainer \
-            -p:PublishProtocol=FileSystem \
-            -p:ContainerImageName=${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io/eshop \
-            -p:ContainerRegistry=https://${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io \
-            -p:ContainerImageTag=production-latest
+          # Array of service projects to containerize
+          SERVICES=(
+            "src/Identity.API/Identity.API.csproj"
+            "src/Basket.API/Basket.API.csproj"
+            "src/Catalog.API/Catalog.API.csproj"
+            "src/Ordering.API/Ordering.API.csproj"
+            "src/OrderProcessor/OrderProcessor.csproj"
+            "src/PaymentProcessor/PaymentProcessor.csproj"
+            "src/Webhooks.API/Webhooks.API.csproj"
+            "src/WebApp/WebApp.csproj"
+            "src/WebhookClient/WebhookClient.csproj"
+          )
+          
+          # Publish each service as a container image to ACR
+          for service in "${SERVICES[@]}"; do
+            serviceName=$(basename $(dirname "$service"))
+            echo "Publishing $serviceName as container image..."
+            
+            dotnet publish "$service" \
+              --configuration Release \
+              -p:PublishProfile=DefaultContainer \
+              -p:ContainerImageName=${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io/$serviceName \
+              -p:ContainerRegistry=https://${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io \
+              -p:ContainerImageTag=production-latest
+          done
         env:
           AZURE_CONTAINER_REGISTRY_USERNAME: ${{ secrets.ACR_USERNAME }}
           AZURE_CONTAINER_REGISTRY_PASSWORD: ${{ secrets.ACR_PASSWORD }}
