@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ${{ secrets.ACR_REGISTRY_NAME }}.azurecr.io
-  ASPIRE_CLI_VERSION: "latest"
+  ASPIRE_CLI_VERSION: "*"
   DOTNET_VERSION: "10.0.x"
 
 jobs:
