@@ -1,4 +1,6 @@
 # This is for editors; keep .github/workflows/markdownlint.yml in sync
 .dotnet/
+.agents/
+docs/
 DECOUPLED_BUSINESS_RULES_BRD.md
 MULTI_TENANCY_ISOLATION_BRD.md
