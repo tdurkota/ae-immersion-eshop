@@ -153,7 +153,7 @@ Incrementally introduce event-driven capabilities to decouple services, enable r
 ## Team Capabilities Required (Summary)
 
 | Capability | Effort | Risk |
-|-----------|--------|------|
+| --- | --- | --- |
 | Message broker administration | Low | Low |
 | Event schema design & versioning | Medium | Low |
 | Async/await patterns in C# | Medium | Low |
@@ -172,24 +172,24 @@ Incrementally introduce event-driven capabilities to decouple services, enable r
 
 ## Phased Delivery Roadmap (High-Level)
 
-**Phase 0 (Weeks 1–2): Foundation**
+### Phase 0 (Weeks 1–2): Foundation
 - Epic 1: Broker provisioned & Aspire-integrated
 - Epic 2: Event schema contracts defined
 - Success metric: Local event producer/consumer test works end-to-end
 
-**Phase 1 (Weeks 3–4): Order Event Emission**
+### Phase 1 (Weeks 3–4): Order Event Emission
 - Epic 3: OrderCreated, OrderStatusChanged events flowing
 - Success metric: External systems (webhooks) receive order events in real-time
 
-**Phase 2 (Weeks 5–7): Catalog, Payment, Fulfillment Events**
+### Phase 2 (Weeks 5–7): Catalog, Payment, Fulfillment Events
 - Epic 4: Payment, inventory, and fulfillment events emitted
 - Success metric: Downstream partners confirm receipt of all critical events
 
-**Phase 3 (Weeks 8–10): Persistence & Reliability**
+### Phase 3 (Weeks 8–10): Persistence & Reliability
 - Epic 6: Event log, outbox pattern, replay capability operational
 - Success metric: Broker outage doesn't lose events; subscribers can catch up
 
-**Phase 4 (Weeks 11–12): Observability & Handoff**
+### Phase 4 (Weeks 11–12): Observability & Handoff
 - Epic 5 (finalize): Webhooks.API fully integrated with event handlers
 - Epic 7: Tests, docs, runbooks complete; team trained
 - Success metric: New developers can emit an event end-to-end
