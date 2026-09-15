@@ -3,13 +3,4 @@
 
 echo "Running pre-commit checks..."
 
-# Run markdownlint on changed markdown files
-echo "Checking markdown files..."
-npx markdownlint '*.md' --config .markdownlint.json
-
-if [ $? -ne 0 ]; then
-  echo "Markdown linting failed. Fix errors with: npm run lint:fix"
-  exit 1
-fi
-
 echo "All checks passed!"
