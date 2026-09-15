@@ -134,7 +134,8 @@ jobs:
           images: ${{ env.REGISTRY }}/eshop-${{ matrix.service }}
           tags: |
             type=ref,event=branch
-            type=sha,prefix={{branch}}-
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-,enable=${{ github.event_name == 'push' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
