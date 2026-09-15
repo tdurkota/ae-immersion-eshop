@@ -36,3 +36,90 @@ When considering contributions, we're guided by several principles that align wi
 ## Code of Conduct
 
 To ensure a welcoming and positive environment for everyone, please adhere to our Code of Conduct. Respectful collaboration is key to a successful project.
+
+## Local Development Setup
+
+To ensure code quality and catch issues early, we use automated linting and pre-commit hooks.
+
+### Prerequisites
+- Node.js and npm installed
+- .NET 10.0 SDK
+
+### Setting Up Your Environment
+
+1. Install npm dependencies:
+```bash
+npm install
+```
+
+1. Initialize git hooks:
+```bash
+npm run prepare
+```
+
+This installs pre-commit hooks that will run linting checks before each commit.
+
+### Linting
+
+We use markdownlint to catch markdown formatting issues:
+
+**Check markdown files:**
+```bash
+npm run lint
+```
+
+**Auto-fix markdown issues:**
+```bash
+npm run lint:fix
+```
+
+### Before You Push
+
+Pre-commit hooks run automatically, but you can also run checks manually:
+
+```bash
+# Check all markdown files
+npm run lint
+
+# Fix auto-fixable issues
+npm run lint:fix
+
+# Run E2E tests
+npm run test:e2e
+
+# Build all projects
+dotnet build eShop.slnx
+```
+
+**Never disable or bypass pre-commit hooks.** If a check fails, fix the underlying issue.
+
+### Coding Standards
+
+- **Markdown**: Follow markdownlint rules (see `.markdownlint.json`). Prioritizes clarity over style.
+- **.NET Code**: Follow C# conventions from `Directory.Build.props`:
+  - Treat warnings as errors (`TreatWarningsAsErrors: true`)
+  - Enable nullable reference types (`Nullable: enable`)
+  - Use latest C# language features (`LangVersion: latest`)
+- **Tests**: Add test coverage for new features. Follow patterns in `tests/API.ContractTests/`
+- **Commits**: Write clear, descriptive commit messages. Reference issue numbers when applicable.
+
+### Common Issues
+
+**Markdownlint pre-commit check fails:**
+```bash
+# Fix automatically
+npm run lint:fix
+```
+
+**Pre-commit hook doesn't run:**
+Ensure the hook is executable:
+```bash
+chmod +x .husky/pre-commit
+```
+
+**Can't commit after fixing issues:**
+Stage the fixed files:
+```bash
+git add .
+git commit -m "Fix markdown linting issues"
+```
