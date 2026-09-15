@@ -14,9 +14,5 @@
     "single-trailing-newline":         false,
     "emphasis-style":                  false,
     "no-emphasis-as-heading":          false,
-    "table-column-style":              false,
-
-    // rule settings and options are documented in https://github.com/DavidAnson/markdownlint
-    // feel free to disable more low value rules in here; get rule name from the error message.
-    // the purpose of the linter is to catch significant issues like broken links.
+    "table-column-style":              false
 }
