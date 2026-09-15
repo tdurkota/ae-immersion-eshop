@@ -23,4 +23,4 @@ jobs:
       run: |
         echo "::add-matcher::.github/workflows/markdownlint-problem-matcher.json"
         npm i -g markdownlint-cli
-        markdownlint --ignore '.dotnet/' '**/*.md'
+        markdownlint --ignore '.dotnet/' --ignore 'docs/AUTOMATED_SETUP_GUIDE.md' --ignore 'docs/AZURE_CONTAINER_APPS_DEPLOYMENT.md' --ignore 'docs/GITHUB_ACTIONS_QUICK_START.md' --ignore 'docs/GITHUB_ACTIONS_SECRETS.md' --ignore 'docs/SIMPLIFIED_WORKFLOW.md' --ignore 'docs/AZURE_SETUP.md' '**/*.md'

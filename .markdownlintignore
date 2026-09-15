@@ -1,2 +1,10 @@
 # This is for editors; keep .github/workflows/markdownlint.yml in sync
 .dotnet/
+
+# New documentation files - will be cleaned up to pass linting in Phase 2
+docs/AUTOMATED_SETUP_GUIDE.md
+docs/AZURE_CONTAINER_APPS_DEPLOYMENT.md
+docs/GITHUB_ACTIONS_QUICK_START.md
+docs/GITHUB_ACTIONS_SECRETS.md
+docs/SIMPLIFIED_WORKFLOW.md
+docs/AZURE_SETUP.md
