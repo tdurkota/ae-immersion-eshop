@@ -2,8 +2,18 @@
 
 var builder = DistributedApplication.CreateBuilder(args);
 
+// Detect CI environment to disable HTTPS-dependent features
+var isCi = builder.Environment.EnvironmentName == "CI" ||
+           string.Equals(
+               Environment.GetEnvironmentVariable("GITHUB_ACTIONS"),
+               "true",
+               StringComparison.OrdinalIgnoreCase);
+
 builder.AddForwardedHeaders();
-builder.AddAzureContainerAppEnvironment("aca");
+if (!isCi)
+{
+    builder.AddAzureContainerAppEnvironment("aca");
+}
 
 var redis = builder.AddRedis("redis");
 var rabbitMq = builder.AddRabbitMQ("eventbus")
