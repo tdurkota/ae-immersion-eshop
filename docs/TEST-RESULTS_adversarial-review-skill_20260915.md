@@ -36,7 +36,7 @@ Complete test suite for the adversarial-review-skill framework executed successf
 **What**: Validates ISO 8601 format `YYYYMMDDTHHHMMSS.SSSZ`
 
 **Result**: 
-```
+```text
 Timestamp: 20260915T194349.796Z
 Regex Match: ✓
 ```
@@ -50,7 +50,7 @@ Regex Match: ✓
 **What**: Ensures sub-millisecond granularity (prevents collisions in rapid succession)
 
 **Result**:
-```
+```text
 Generated: 10 timestamps
 Unique milliseconds: 10 (100% unique)
 Sample: [
@@ -69,7 +69,7 @@ Sample: [
 **What**: Confirms Z suffix (UTC marker) and timestamp within expected time range
 
 **Result**:
-```
+```text
 Timestamp: 20260915T194407.148Z
 Z Suffix: ✓
 Time Drift: 1 second (within 5s tolerance)
@@ -86,7 +86,7 @@ Time Drift: 1 second (within 5s tolerance)
 **What**: Validates counter-based retry logic when file already exists
 
 **Result**:
-```
+```text
 Write 1: adversarial-review_test_feature-test_1_20260915T193842.123Z.md
          ✓ Created (attempt 0)
 
@@ -111,7 +111,7 @@ Write 3: adversarial-review_test_feature-test_1_20260915T193842.123Z_002.md
 **What**: Confirms original files are never silently replaced during collision handling
 
 **Result**:
-```
+```text
 Original File Content: "Original content"
 After Collision Attempt: Still "Original content" ✓
 
@@ -128,7 +128,7 @@ Counter File Content: "New content" ✓
 
 ## Test Summary
 
-```
+```text
 ============================================================
 Test Summary
 ============================================================
@@ -154,7 +154,7 @@ All tests passed!
 
 The following files were created/validated:
 
-```
+```text
 .agents/skills/adversarial-review-skill/
 ├── SKILL.md                          ← Main workflow (writing-for-agents compliant)
 ├── TESTING.md                         ← Comprehensive testing guide

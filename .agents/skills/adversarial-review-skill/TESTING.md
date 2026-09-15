@@ -227,7 +227,7 @@ chmod +x .husky/pre-commit
 
 ### Exit Codes
 
-```
+```text
 0 = All tests passed → Safe to beta
 1 = One or more tests failed → Block beta, investigate
 ```
