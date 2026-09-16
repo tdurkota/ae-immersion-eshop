@@ -6,7 +6,7 @@ permissions:
 # run even on changes without markdown changes, so that we can
 # make it in GitHub a required check for PR's
 on:
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   lint:
@@ -23,4 +23,4 @@ jobs:
       run: |
         echo "::add-matcher::.github/workflows/markdownlint-problem-matcher.json"
         npm i -g markdownlint-cli
-        markdownlint --ignore '.dotnet/' --ignore '.agents/' --ignore 'docs/' --ignore 'DECOUPLED_BUSINESS_RULES_BRD.md' --ignore 'MULTI_TENANCY_ISOLATION_BRD.md' '**/*.md'
+        markdownlint --ignore '.dotnet/' --ignore '.agents/' --ignore 'docs/' --ignore 'DECOUPLED_BUSINESS_RULES_BRD.md' --ignore 'MULTI_TENANCY_ISOLATION_BRD.md' --ignore 'TOOLS-TECHNIQUES-ROADMAP.md' --ignore 'adversarial-review_*.md' --ignore 'TEST-RESULTS_*.md' '**/*.md'

@@ -1,0 +1,1140 @@
+openapi: 3.0.3
+info:
+  title: Sellers.API
+  version: 1.0.0
+  description: >
+    OpenAPI contract for seller registration, profile management, seller product
+    visibility, seller order visibility, and payout ledger endpoints.
+servers:
+  - url: https://api.eshop.local
+    description: Local development gateway
+tags:
+  - name: Sellers
+    description: Seller account registration and profile operations
+  - name: Seller Products
+    description: Read operations for products owned by a seller
+  - name: Seller Orders
+    description: Read operations for orders containing a seller's items
+  - name: Seller Payouts
+    description: Read operations for payout ledger and payout summary data
+security:
+  - bearerAuth: []
+paths:
+  /api/sellers:
+    post:
+      tags:
+        - Sellers
+      summary: Register seller
+      description: >
+        Registers a new seller account. Requires a valid JWT bearer token and a
+        token containing the `seller` or `admin` role claim. The seller email
+        must be unique among seller accounts, must be in a valid email format,
+        and all required fields must be provided.
+      operationId: registerSeller
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterSellerRequest'
+            examples:
+              default:
+                summary: Example registration request
+                value:
+                  email: seller@example.com
+                  firstName: Ava
+                  lastName: Brooks
+                  phone: "+1-555-0100"
+                  description: Handmade home decor and seasonal goods
+                  commissionRate: 0.15
+      responses:
+        '201':
+          description: Seller account created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterSellerResponse'
+              examples:
+                created:
+                  summary: Example created seller response
+                  value:
+                    sellerId: 5d6af6d6-0d7c-4df8-9752-894d83dfab4e
+                    email: seller@example.com
+                    firstName: Ava
+                    lastName: Brooks
+                    status: active
+        '400':
+          description: >
+            Validation failed due to missing required fields, invalid email
+            format, or an out-of-range commission rate.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationProblemDetails'
+              examples:
+                invalidRequest:
+                  summary: Example validation error
+                  value:
+                    type: https://httpstatuses.com/400
+                    title: One or more validation errors occurred.
+                    status: 400
+                    traceId: 00-aabbccddeeff00112233445566778899-1122334455667788-00
+                    errors:
+                      email:
+                        - Email must be a valid email address.
+                      commissionRate:
+                        - Commission rate must be between 0 and 1.
+        '401':
+          description: Missing, invalid, or expired JWT bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  value:
+                    code: unauthorized
+                    message: Authentication is required to access this endpoint.
+        '403':
+          description: >
+            Authenticated caller does not have a `seller` or `admin` role claim.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  value:
+                    code: forbidden
+                    message: Seller or admin role is required.
+        '409':
+          description: A seller account with the supplied email already exists.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                duplicateEmail:
+                  summary: Example duplicate email response
+                  value:
+                    code: duplicate_email
+                    message: Email already in use.
+  /api/sellers/{sellerId}:
+    get:
+      tags:
+        - Sellers
+      summary: Get seller profile
+      description: >
+        Returns the full private seller profile for the seller identified by
+        `sellerId`. Access is restricted to the resource owner whose JWT
+        contains a matching `seller_id` claim or to an administrator with the
+        `admin` role.
+      operationId: getSellerProfile
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SellerId'
+      responses:
+        '200':
+          description: Full seller profile returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellerProfile'
+              examples:
+                profile:
+                  summary: Example seller profile
+                  value:
+                    sellerId: 5d6af6d6-0d7c-4df8-9752-894d83dfab4e
+                    email: seller@example.com
+                    firstName: Ava
+                    lastName: Brooks
+                    phone: "+1-555-0100"
+                    description: Handmade home decor and seasonal goods
+                    commissionRate: 0.15
+                    status: active
+                    payoutStatus: pending
+                    createdAt: "2026-09-15T12:15:00Z"
+                    updatedAt: "2026-09-15T13:05:00Z"
+        '401':
+          description: Missing, invalid, or expired JWT bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  value:
+                    code: unauthorized
+                    message: Authentication is required to access this endpoint.
+        '403':
+          description: Caller is not the seller owner and does not have the admin role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  value:
+                    code: forbidden
+                    message: You are not authorized to access this seller profile.
+        '404':
+          description: Seller was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: seller_not_found
+                    message: Seller 5d6af6d6-0d7c-4df8-9752-894d83dfab4e was not found.
+    put:
+      tags:
+        - Sellers
+      summary: Update seller profile
+      description: >
+        Updates editable seller profile fields for the seller identified by
+        `sellerId`. Access is restricted to the resource owner whose JWT
+        contains a matching `seller_id` claim or to an administrator with the
+        `admin` role.
+      operationId: updateSellerProfile
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SellerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSellerRequest'
+            examples:
+              default:
+                summary: Example update request
+                value:
+                  firstName: Ava
+                  lastName: Brooks
+                  description: Handmade home decor, gifts, and seasonal goods
+                  commissionRate: 0.12
+      responses:
+        '200':
+          description: Seller profile updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellerProfile'
+              examples:
+                updated:
+                  summary: Example updated seller profile
+                  value:
+                    sellerId: 5d6af6d6-0d7c-4df8-9752-894d83dfab4e
+                    email: seller@example.com
+                    firstName: Ava
+                    lastName: Brooks
+                    phone: "+1-555-0100"
+                    description: Handmade home decor, gifts, and seasonal goods
+                    commissionRate: 0.12
+                    status: active
+                    payoutStatus: pending
+                    createdAt: "2026-09-15T12:15:00Z"
+                    updatedAt: "2026-09-15T14:20:00Z"
+        '400':
+          description: Update request failed validation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationProblemDetails'
+              examples:
+                invalidUpdate:
+                  value:
+                    type: https://httpstatuses.com/400
+                    title: One or more validation errors occurred.
+                    status: 400
+                    traceId: 00-aabbccddeeff00112233445566778899-1122334455667788-00
+                    errors:
+                      firstName:
+                        - First name is required.
+        '401':
+          description: Missing, invalid, or expired JWT bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  value:
+                    code: unauthorized
+                    message: Authentication is required to access this endpoint.
+        '403':
+          description: Caller is not the seller owner and does not have the admin role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  value:
+                    code: forbidden
+                    message: You are not authorized to update this seller profile.
+        '404':
+          description: Seller was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    code: seller_not_found
+                    message: Seller 5d6af6d6-0d7c-4df8-9752-894d83dfab4e was not found.
+  /api/sellers/{sellerId}/products:
+    get:
+      tags:
+        - Seller Products
+      summary: Get seller products
+      description: >
+        Returns paginated products owned by the seller identified by `sellerId`.
+        Access is restricted to the resource owner whose JWT contains a matching
+        `seller_id` claim or to an administrator with the `admin` role.
+      operationId: getSellerProducts
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SellerId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Paginated seller products returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSellerProductsResponse'
+              examples:
+                products:
+                  summary: Example seller products page
+                  value:
+                    items:
+                      - productId: 4b5ea228-6ff2-4d2c-8bf0-a06b6ca6dfd9
+                        sellerId: 5d6af6d6-0d7c-4df8-9752-894d83dfab4e
+                        sku: HMD-1001
+                        name: Handwoven Basket
+                        description: Natural fiber basket with reinforced handles
+                        unitPrice: 39.99
+                        currency: USD
+                        availableStock: 18
+                        status: active
+                        createdAt: "2026-09-10T08:30:00Z"
+                    totalCount: 1
+                    page: 1
+                    pageSize: 20
+        '401':
+          description: Missing, invalid, or expired JWT bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Caller is not the seller owner and does not have the admin role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  value:
+                    code: forbidden
+                    message: You are not authorized to view this seller's products.
+        '404':
+          description: Seller was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/sellers/{sellerId}/orders:
+    get:
+      tags:
+        - Seller Orders
+      summary: Get seller orders
+      description: >
+        Returns paginated orders that contain items sold by the seller
+        identified by `sellerId`. Only seller-owned line items are returned for
+        each order. Access is restricted to the resource owner whose JWT
+        contains a matching `seller_id` claim or to an administrator with the
+        `admin` role.
+      operationId: getSellerOrders
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SellerId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/OrderStatus'
+      responses:
+        '200':
+          description: Paginated seller orders returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSellerOrdersResponse'
+              examples:
+                orders:
+                  summary: Example seller orders page
+                  value:
+                    items:
+                      - orderId: c70a21d4-72de-4894-9c8f-3de09f75fc6d
+                        sellerId: 5d6af6d6-0d7c-4df8-9752-894d83dfab4e
+                        orderDate: "2026-09-14T18:42:00Z"
+                        status: processing
+                        customer:
+                          customerId: 7b5ee996-e873-4317-9ce8-4c4668ec78f6
+                          displayName: J. Doe
+                        items:
+                          - orderLineItemId: 27eea85d-b6de-4b0e-b4bc-5a96049e8ea9
+                            productId: 4b5ea228-6ff2-4d2c-8bf0-a06b6ca6dfd9
+                            productName: Handwoven Basket
+                            quantity: 2
+                            unitPrice: 39.99
+                            grossTotal: 79.98
+                            commissionRate: 0.15
+                            commissionAmount: 12.00
+                            sellerAmount: 67.98
+                            status: processing
+                        totals:
+                          grossAmount: 79.98
+                          commissionAmount: 12.00
+                          sellerAmount: 67.98
+                    totalCount: 1
+                    page: 1
+                    pageSize: 20
+        '401':
+          description: Missing, invalid, or expired JWT bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Caller is not the seller owner and does not have the admin role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  value:
+                    code: forbidden
+                    message: You are not authorized to view this seller's orders.
+        '404':
+          description: Seller was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/sellers/{sellerId}/payouts:
+    get:
+      tags:
+        - Seller Payouts
+      summary: Get seller payouts
+      description: >
+        Returns the seller payout ledger for the seller identified by
+        `sellerId`. Supports filtering by payout status, ledger creation date,
+        and page. Access is restricted to the resource owner whose JWT contains
+        a matching `seller_id` claim or to an administrator with the `admin`
+        role.
+      operationId: getSellerPayouts
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SellerId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/PayoutStatus'
+        - $ref: '#/components/parameters/DateFrom'
+        - $ref: '#/components/parameters/DateTo'
+      responses:
+        '200':
+          description: Paginated seller payout records returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSellerPayoutsResponse'
+              examples:
+                payouts:
+                  summary: Example seller payouts page
+                  value:
+                    items:
+                      - payoutId: 087850c0-9e97-4493-b302-c5460f1c859f
+                        sellerId: 5d6af6d6-0d7c-4df8-9752-894d83dfab4e
+                        orderId: c70a21d4-72de-4894-9c8f-3de09f75fc6d
+                        orderLineItemId: 27eea85d-b6de-4b0e-b4bc-5a96049e8ea9
+                        grossAmount: 79.98
+                        commissionRate: 0.15
+                        commissionAmount: 12.00
+                        sellerAmount: 67.98
+                        status: pending
+                        createdAt: "2026-09-14T18:42:05Z"
+                        paidAt: null
+                    totalCount: 1
+                    page: 1
+                    pageSize: 20
+        '401':
+          description: Missing, invalid, or expired JWT bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Caller is not the seller owner and does not have the admin role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  value:
+                    code: forbidden
+                    message: You are not authorized to view this seller's payout ledger.
+        '404':
+          description: Seller was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/sellers/{sellerId}/payouts/summary:
+    get:
+      tags:
+        - Seller Payouts
+      summary: Get seller payout summary
+      description: >
+        Returns aggregate payout totals for the seller identified by `sellerId`.
+        Access is restricted to the resource owner whose JWT contains a matching
+        `seller_id` claim or to an administrator with the `admin` role.
+      operationId: getSellerPayoutSummary
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SellerId'
+      responses:
+        '200':
+          description: Payout summary totals returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SellerPayoutSummaryResponse'
+              examples:
+                summary:
+                  summary: Example payout summary
+                  value:
+                    totalPending: 150.45
+                    totalPaid: 1235.60
+                    totalFailed: 0.00
+                    totalEarnings: 1386.05
+        '401':
+          description: Missing, invalid, or expired JWT bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Caller is not the seller owner and does not have the admin role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  value:
+                    code: forbidden
+                    message: You are not authorized to view this seller's payout summary.
+        '404':
+          description: Seller was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        JWT bearer token issued by Identity.API. Seller-specific endpoints
+        require an authenticated caller and enforce role-based access using the
+        `role` claim (`seller` or `admin`). Owner-scoped endpoints also require
+        a `seller_id` claim matching the `{sellerId}` route parameter unless the
+        caller has the `admin` role.
+  parameters:
+    SellerId:
+      name: sellerId
+      in: path
+      required: true
+      description: Unique seller identifier in UUID format.
+      schema:
+        type: string
+        format: uuid
+      example: 5d6af6d6-0d7c-4df8-9752-894d83dfab4e
+    Page:
+      name: page
+      in: query
+      required: false
+      description: One-based page number to retrieve.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      example: 1
+    PageSize:
+      name: pageSize
+      in: query
+      required: false
+      description: Number of records returned per page.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      example: 20
+    OrderStatus:
+      name: status
+      in: query
+      required: false
+      description: Optional filter for seller order status.
+      schema:
+        $ref: '#/components/schemas/OrderStatus'
+      example: processing
+    PayoutStatus:
+      name: status
+      in: query
+      required: false
+      description: Optional filter for payout status.
+      schema:
+        $ref: '#/components/schemas/PayoutStatus'
+      example: pending
+    DateFrom:
+      name: dateFrom
+      in: query
+      required: false
+      description: Inclusive start date for filtering records by creation date.
+      schema:
+        type: string
+        format: date
+      example: "2026-09-01"
+    DateTo:
+      name: dateTo
+      in: query
+      required: false
+      description: Inclusive end date for filtering records by creation date.
+      schema:
+        type: string
+        format: date
+      example: "2026-09-30"
+  schemas:
+    RegisterSellerRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - email
+        - firstName
+        - lastName
+        - phone
+        - description
+        - commissionRate
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+          description: Unique seller email address.
+          example: seller@example.com
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Seller first name.
+          example: Ava
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Seller last name.
+          example: Brooks
+        phone:
+          type: string
+          minLength: 7
+          maxLength: 30
+          description: Seller contact phone number.
+          example: "+1-555-0100"
+        description:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: Seller storefront or business description.
+          example: Handmade home decor and seasonal goods
+        commissionRate:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+          description: Platform commission rate expressed as a decimal between 0 and 1.
+          example: 0.15
+    RegisterSellerResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - sellerId
+        - email
+        - firstName
+        - lastName
+        - status
+      properties:
+        sellerId:
+          type: string
+          format: uuid
+          example: 5d6af6d6-0d7c-4df8-9752-894d83dfab4e
+        email:
+          type: string
+          format: email
+          example: seller@example.com
+        firstName:
+          type: string
+          example: Ava
+        lastName:
+          type: string
+          example: Brooks
+        status:
+          $ref: '#/components/schemas/SellerStatus'
+    UpdateSellerRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - firstName
+        - lastName
+        - description
+        - commissionRate
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Updated seller first name.
+          example: Ava
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Updated seller last name.
+          example: Brooks
+        description:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: Updated seller business description.
+          example: Handmade home decor, gifts, and seasonal goods
+        commissionRate:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+          description: Updated platform commission rate expressed as a decimal between 0 and 1.
+          example: 0.12
+    SellerProfile:
+      type: object
+      additionalProperties: false
+      required:
+        - sellerId
+        - email
+        - firstName
+        - lastName
+        - phone
+        - description
+        - commissionRate
+        - status
+        - payoutStatus
+        - createdAt
+        - updatedAt
+      properties:
+        sellerId:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        description:
+          type: string
+        commissionRate:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+        status:
+          $ref: '#/components/schemas/SellerStatus'
+        payoutStatus:
+          $ref: '#/components/schemas/PayoutStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    SellerProduct:
+      type: object
+      additionalProperties: false
+      required:
+        - productId
+        - sellerId
+        - sku
+        - name
+        - description
+        - unitPrice
+        - currency
+        - availableStock
+        - status
+        - createdAt
+      properties:
+        productId:
+          type: string
+          format: uuid
+        sellerId:
+          type: string
+          format: uuid
+        sku:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        unitPrice:
+          type: number
+          format: double
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          example: USD
+        availableStock:
+          type: integer
+          minimum: 0
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+            - draft
+        createdAt:
+          type: string
+          format: date-time
+    SellerOrderCustomer:
+      type: object
+      additionalProperties: false
+      required:
+        - customerId
+        - displayName
+      properties:
+        customerId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+          description: Privacy-limited customer display value.
+          example: J. Doe
+    SellerOrderLineItem:
+      type: object
+      additionalProperties: false
+      required:
+        - orderLineItemId
+        - productId
+        - productName
+        - quantity
+        - unitPrice
+        - grossTotal
+        - commissionRate
+        - commissionAmount
+        - sellerAmount
+        - status
+      properties:
+        orderLineItemId:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        productName:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+        unitPrice:
+          type: number
+          format: double
+        grossTotal:
+          type: number
+          format: double
+        commissionRate:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+        commissionAmount:
+          type: number
+          format: double
+        sellerAmount:
+          type: number
+          format: double
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+    SellerOrderTotals:
+      type: object
+      additionalProperties: false
+      required:
+        - grossAmount
+        - commissionAmount
+        - sellerAmount
+      properties:
+        grossAmount:
+          type: number
+          format: double
+        commissionAmount:
+          type: number
+          format: double
+        sellerAmount:
+          type: number
+          format: double
+    SellerOrder:
+      type: object
+      additionalProperties: false
+      required:
+        - orderId
+        - sellerId
+        - orderDate
+        - status
+        - customer
+        - items
+        - totals
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        sellerId:
+          type: string
+          format: uuid
+        orderDate:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        customer:
+          $ref: '#/components/schemas/SellerOrderCustomer'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SellerOrderLineItem'
+        totals:
+          $ref: '#/components/schemas/SellerOrderTotals'
+    SellerPayoutRecord:
+      type: object
+      additionalProperties: false
+      required:
+        - payoutId
+        - sellerId
+        - orderId
+        - orderLineItemId
+        - grossAmount
+        - commissionRate
+        - commissionAmount
+        - sellerAmount
+        - status
+        - createdAt
+      properties:
+        payoutId:
+          type: string
+          format: uuid
+        sellerId:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        orderLineItemId:
+          type: string
+          format: uuid
+        grossAmount:
+          type: number
+          format: double
+        commissionRate:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 1
+        commissionAmount:
+          type: number
+          format: double
+        sellerAmount:
+          type: number
+          format: double
+        status:
+          $ref: '#/components/schemas/PayoutStatus'
+        createdAt:
+          type: string
+          format: date-time
+        paidAt:
+          type: string
+          format: date-time
+          nullable: true
+    SellerPayoutSummaryResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - totalPending
+        - totalPaid
+        - totalFailed
+        - totalEarnings
+      properties:
+        totalPending:
+          type: number
+          format: double
+          example: 150.45
+        totalPaid:
+          type: number
+          format: double
+          example: 1235.60
+        totalFailed:
+          type: number
+          format: double
+          example: 0
+        totalEarnings:
+          type: number
+          format: double
+          example: 1386.05
+    PaginatedSellerProductsResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginatedMetadata'
+        - type: object
+          additionalProperties: false
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/SellerProduct'
+    PaginatedSellerOrdersResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginatedMetadata'
+        - type: object
+          additionalProperties: false
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/SellerOrder'
+    PaginatedSellerPayoutsResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginatedMetadata'
+        - type: object
+          additionalProperties: false
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/SellerPayoutRecord'
+    PaginatedMetadata:
+      type: object
+      additionalProperties: false
+      required:
+        - totalCount
+        - page
+        - pageSize
+      properties:
+        totalCount:
+          type: integer
+          minimum: 0
+          example: 1
+        page:
+          type: integer
+          minimum: 1
+          example: 1
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 20
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: forbidden
+        message:
+          type: string
+          example: You are not authorized to access this resource.
+    ValidationProblemDetails:
+      type: object
+      additionalProperties: false
+      required:
+        - title
+        - status
+        - errors
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://httpstatuses.com/400
+        title:
+          type: string
+          example: One or more validation errors occurred.
+        status:
+          type: integer
+          example: 400
+        traceId:
+          type: string
+          example: 00-aabbccddeeff00112233445566778899-1122334455667788-00
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            email:
+              - Email must be a valid email address.
+    SellerStatus:
+      type: string
+      enum:
+        - active
+        - inactive
+        - suspended
+      example: active
+    OrderStatus:
+      type: string
+      enum:
+        - pending
+        - processing
+        - shipped
+        - delivered
+        - cancelled
+      example: processing
+    PayoutStatus:
+      type: string
+      enum:
+        - pending
+        - paid
+        - failed
+      example: pending
