@@ -27,6 +27,7 @@ var catalogDb = postgres.AddDatabase("catalogdb");
 var identityDb = postgres.AddDatabase("identitydb");
 var orderDb = postgres.AddDatabase("orderingdb");
 var webhooksDb = postgres.AddDatabase("webhooksdb");
+var sellersDb = postgres.AddDatabase("sellersdb");
 
 var launchProfileName = ShouldUseHttpForEndpoints() ? "http" : "https";
 
@@ -47,6 +48,12 @@ redis.WithParentRelationship(basketApi);
 var catalogApi = builder.AddProject<Projects.Catalog_API>("catalog-api")
     .WithReference(rabbitMq).WaitFor(rabbitMq)
     .WithReference(catalogDb);
+
+var sellersApi = builder.AddProject<Projects.Sellers_API>("sellers-api")
+    .WithReference(rabbitMq).WaitFor(rabbitMq)
+    .WithReference(sellersDb)
+    .WithHttpHealthCheck("/health")
+    .WithEnvironment("Identity__Url", identityEndpoint);
 
 var orderingApi = builder.AddProject<Projects.Ordering_API>("ordering-api")
     .WithReference(rabbitMq).WaitFor(rabbitMq)
@@ -107,6 +114,7 @@ webhooksClient.WithEnvironment("CallBackUrl", webhooksClient.GetEndpoint(launchP
 // Identity has a reference to all of the apps for callback urls, this is a cyclic reference
 identityApi.WithEnvironment("BasketApiClient", basketApi.GetEndpoint("http"))
            .WithEnvironment("OrderingApiClient", orderingApi.GetEndpoint("http"))
+           .WithEnvironment("SellersApiClient", sellersApi.GetEndpoint("http"))
            .WithEnvironment("WebhooksApiClient", webHooksApi.GetEndpoint("http"))
            .WithEnvironment("WebhooksWebClient", webhooksClient.GetEndpoint(launchProfileName))
            .WithEnvironment("WebAppClient", webApp.GetEndpoint(launchProfileName));
