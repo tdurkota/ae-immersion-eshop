@@ -27,6 +27,8 @@ public class CatalogItem
 
     public Guid? SellerId { get; set; }
 
+    public Seller? Seller { get; set; }
+
     // Quantity in stock
     public int AvailableStock { get; set; }
 

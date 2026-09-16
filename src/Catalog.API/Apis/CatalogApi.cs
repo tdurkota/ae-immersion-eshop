@@ -119,7 +119,7 @@ public static class CatalogApi
     }
 
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
-    public static async Task<Ok<PaginatedItems<CatalogItem>>> GetAllItemsV1(
+    public static async Task<Ok<PaginatedItems<ProductResponseDto>>> GetAllItemsV1(
         [AsParameters] PaginationRequest paginationRequest,
         [AsParameters] CatalogServices services)
     {
@@ -127,7 +127,7 @@ public static class CatalogApi
     }
 
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
-    public static async Task<Ok<PaginatedItems<CatalogItem>>> GetAllItems(
+    public static async Task<Ok<PaginatedItems<ProductResponseDto>>> GetAllItems(
         [AsParameters] PaginationRequest paginationRequest,
         [AsParameters] CatalogServices services,
         [Description("The name of the item to return")] string? name,
@@ -162,12 +162,16 @@ public static class CatalogApi
 
         var itemsOnPage = await root
             .Include(ci => ci.CatalogBrand)
+            .Include(ci => ci.CatalogType)
+            .Include(ci => ci.Seller)
             .OrderBy(c => c.Name)
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
             .ToListAsync();
 
-        return TypedResults.Ok(new PaginatedItems<CatalogItem>(pageIndex, pageSize, totalItems, itemsOnPage));
+        var dtoItems = itemsOnPage.Select(MapToProductResponseDto).ToList();
+
+        return TypedResults.Ok(new PaginatedItems<ProductResponseDto>(pageIndex, pageSize, totalItems, dtoItems));
     }
 
     public static async Task<Ok<CatalogFacets>> GetCatalogFacets(
@@ -209,16 +213,22 @@ public static class CatalogApi
     }
 
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
-    public static async Task<Ok<List<CatalogItem>>> GetItemsByIds(
+    public static async Task<Ok<List<ProductResponseDto>>> GetItemsByIds(
         [AsParameters] CatalogServices services,
         [Description("List of ids for catalog items to return")] int[] ids)
     {
-        var items = await services.Context.CatalogItems.Where(item => ids.Contains(item.Id)).ToListAsync();
-        return TypedResults.Ok(items);
+        var items = await services.Context.CatalogItems
+            .Include(ci => ci.CatalogBrand)
+            .Include(ci => ci.CatalogType)
+            .Include(ci => ci.Seller)
+            .Where(item => ids.Contains(item.Id))
+            .ToListAsync();
+        var dtoItems = items.Select(MapToProductResponseDto).ToList();
+        return TypedResults.Ok(dtoItems);
     }
 
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
-    public static async Task<Results<Ok<CatalogItem>, NotFound, BadRequest<ProblemDetails>>> GetItemById(
+    public static async Task<Results<Ok<ProductResponseDto>, NotFound, BadRequest<ProblemDetails>>> GetItemById(
         HttpContext httpContext,
         [AsParameters] CatalogServices services,
         [Description("The catalog item id")] int id)
@@ -230,18 +240,23 @@ public static class CatalogApi
             });
         }
 
-        var item = await services.Context.CatalogItems.Include(ci => ci.CatalogBrand).SingleOrDefaultAsync(ci => ci.Id == id);
+        var item = await services.Context.CatalogItems
+            .Include(ci => ci.CatalogBrand)
+            .Include(ci => ci.CatalogType)
+            .Include(ci => ci.Seller)
+            .SingleOrDefaultAsync(ci => ci.Id == id);
 
         if (item == null)
         {
             return TypedResults.NotFound();
         }
 
-        return TypedResults.Ok(item);
+        var dto = MapToProductResponseDto(item);
+        return TypedResults.Ok(dto);
     }
 
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
-    public static async Task<Ok<PaginatedItems<CatalogItem>>> GetItemsByName(
+    public static async Task<Ok<PaginatedItems<ProductResponseDto>>> GetItemsByName(
         [AsParameters] PaginationRequest paginationRequest,
         [AsParameters] CatalogServices services,
         [Description("The name of the item to return")] string name)
@@ -274,7 +289,7 @@ public static class CatalogApi
     }
 
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
-    public static async Task<Results<Ok<PaginatedItems<CatalogItem>>, RedirectToRouteHttpResult>> GetItemsBySemanticRelevanceV1(
+    public static async Task<Results<Ok<PaginatedItems<ProductResponseDto>>, RedirectToRouteHttpResult>> GetItemsBySemanticRelevanceV1(
         [AsParameters] PaginationRequest paginationRequest,
         [AsParameters] CatalogServices services,
         [Description("The text string to use when search for related items in the catalog")] string text)
@@ -284,7 +299,7 @@ public static class CatalogApi
     }
 
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
-    public static async Task<Results<Ok<PaginatedItems<CatalogItem>>, RedirectToRouteHttpResult>> GetItemsBySemanticRelevance(
+    public static async Task<Results<Ok<PaginatedItems<ProductResponseDto>>, RedirectToRouteHttpResult>> GetItemsBySemanticRelevance(
         [AsParameters] PaginationRequest paginationRequest,
         [AsParameters] CatalogServices services,
         [Description("The text string to use when search for related items in the catalog"), Required, MinLength(1)] string text)
@@ -314,6 +329,9 @@ public static class CatalogApi
         if (services.Logger.IsEnabled(LogLevel.Debug))
         {
             var itemsWithDistance = await services.Context.CatalogItems
+                .Include(ci => ci.CatalogBrand)
+                .Include(ci => ci.CatalogType)
+                .Include(ci => ci.Seller)
                 .Where(c => c.Embedding != null)
                 .Select(c => new { Item = c, Distance = c.Embedding!.CosineDistance(vector) })
                 .OrderBy(c => c.Distance)
@@ -328,6 +346,9 @@ public static class CatalogApi
         else
         {
             itemsOnPage = await services.Context.CatalogItems
+                .Include(ci => ci.CatalogBrand)
+                .Include(ci => ci.CatalogType)
+                .Include(ci => ci.Seller)
                 .Where(c => c.Embedding != null)
                 .OrderBy(c => c.Embedding!.CosineDistance(vector))
                 .Skip(pageSize * pageIndex)
@@ -335,11 +356,12 @@ public static class CatalogApi
                 .ToListAsync();
         }
 
-        return TypedResults.Ok(new PaginatedItems<CatalogItem>(pageIndex, pageSize, totalItems, itemsOnPage));
+        var dtoItems = itemsOnPage.Select(MapToProductResponseDto).ToList();
+        return TypedResults.Ok(new PaginatedItems<ProductResponseDto>(pageIndex, pageSize, totalItems, dtoItems));
     }
 
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
-    public static async Task<Ok<PaginatedItems<CatalogItem>>> GetItemsByBrandAndTypeId(
+    public static async Task<Ok<PaginatedItems<ProductResponseDto>>> GetItemsByBrandAndTypeId(
         [AsParameters] PaginationRequest paginationRequest,
         [AsParameters] CatalogServices services,
         [Description("The type of items to return")] int typeId,
@@ -349,7 +371,7 @@ public static class CatalogApi
     }
 
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
-    public static async Task<Ok<PaginatedItems<CatalogItem>>> GetItemsByBrandId(
+    public static async Task<Ok<PaginatedItems<ProductResponseDto>>> GetItemsByBrandId(
         [AsParameters] PaginationRequest paginationRequest,
         [AsParameters] CatalogServices services,
         [Description("The brand of items to return")] int? brandId)
@@ -469,4 +491,40 @@ public static class CatalogApi
 
     public static string GetFullPath(string contentRootPath, string pictureFileName) =>
         Path.Combine(contentRootPath, "Pics", pictureFileName);
+
+    /// <summary>
+    /// Maps a CatalogItem to a ProductResponseDto with seller attribution.
+    /// Platform products (no seller) show "Official Store" as the seller name.
+    /// </summary>
+    private static ProductResponseDto MapToProductResponseDto(CatalogItem item)
+    {
+        var sellerName = item.SellerId.HasValue && item.Seller != null
+            ? item.Seller.Name
+            : "Official Store";
+
+        var catalogBrandDto = item.CatalogBrand != null
+            ? new CatalogBrandDto(item.CatalogBrand.Id, item.CatalogBrand.Brand)
+            : null;
+
+        var catalogTypeDto = item.CatalogType != null
+            ? new CatalogTypeDto(item.CatalogType.Id, item.CatalogType.Type)
+            : null;
+
+        return new ProductResponseDto(
+            Id: item.Id,
+            Name: item.Name,
+            Description: item.Description,
+            Price: item.Price,
+            PictureFileName: item.PictureFileName,
+            CatalogTypeId: item.CatalogTypeId,
+            CatalogType: catalogTypeDto,
+            CatalogBrandId: item.CatalogBrandId,
+            CatalogBrand: catalogBrandDto,
+            AvailableStock: item.AvailableStock,
+            RestockThreshold: item.RestockThreshold,
+            MaxStockThreshold: item.MaxStockThreshold,
+            OnReorder: item.OnReorder,
+            SellerId: item.SellerId,
+            SellerName: sellerName);
+    }
 }

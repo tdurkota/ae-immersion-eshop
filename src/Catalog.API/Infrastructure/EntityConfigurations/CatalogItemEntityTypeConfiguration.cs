@@ -22,6 +22,11 @@ class CatalogItemEntityTypeConfiguration
         builder.HasOne(ci => ci.CatalogType)
             .WithMany();
 
+        builder.HasOne(ci => ci.Seller)
+            .WithMany(s => s.Products)
+            .HasForeignKey(ci => ci.SellerId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasIndex(ci => ci.Name);
         builder.HasIndex(ci => ci.SellerId);
     }
