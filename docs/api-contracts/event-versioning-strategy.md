@@ -1,50 +1,39 @@
 # Event Versioning Strategy
 
 ## Purpose
-Define how integration events evolve without breaking downstream consumers as the marketplace and existing eShop domains continue to ship independently.
+Define how integration events evolve as the marketplace and existing eShop domains continue to ship independently.
+
+## Context
+This application currently serves no traffic. We prioritize rapid development and iteration over backward compatibility or clean migration paths. We will not roll back during the development phase, and all services can be redeployed as needed. As the platform matures and traffic increases, these strategies may evolve to require formal versioning and migration windows.
 
 ## Versioning Rules
-1. **Append-only contracts**: published event fields are never removed or repurposed in-place.
-2. **Additive change first**: optional fields may be added to the current version when consumers can safely ignore them.
-3. **New major version for breaking changes**: rename/removal, semantic meaning changes, required field additions, or structural changes create a new version (`v2`, `v3`, and so on).
-4. **Parallel publication is required during migration**: when a breaking change is introduced, producers publish both prior and new versions until all approved consumers complete cutover.
-5. **Version is explicit in the contract**: every payload includes `eventType` and `eventVersion`, and the registry stores producer, status, owner, and sunset metadata.
-6. **Schema registration before release**: no producer may emit a new event or version until its schema and sample payload are added to the event contract registry.
-7. **Consumer isolation**: subscribers must bind to the event version they support and treat unknown fields as non-breaking.
+1. **Append-only contracts (preferred)**: published event fields are never removed or repurposed in-place to maintain resilience across versions.
+2. **Additive changes first**: optional fields may be added to the current version when consumers can safely ignore them.
+3. **Breaking changes allowed**: rename/removal, semantic meaning changes, required field additions, or structural changes can be introduced when all consumers are updated in the same deployment cycle.
+4. **Version is explicit in the contract**: every payload includes `eventType` and `eventVersion` for clarity and forward compatibility planning.
+5. **Schema registration before release**: event schemas should be documented before emission to serve as contracts, but are not blocking deployment during development.
+6. **Consumer isolation**: subscribers must handle the event versions they support and treat unknown fields as non-breaking.
 
 ## Registry Requirements
-Each registry entry must capture:
+Each registry entry should capture:
 - Event name
 - Version
 - Owning team
 - Producing service
-- Known consuming services or partner integrations
-- Compatibility notes
+- Known consuming services
 - Example payload
-- Lifecycle state (`draft`, `active`, `deprecated`, `retired`)
-- Migration or sunset target date when applicable
+- Lifecycle state (`draft`, `active`, `deprecated`)
 
 ## Migration Strategy
-### Non-Breaking Changes
-- Add new optional fields only
-- Update schema documentation and example payloads
-- Notify consumers through release notes, but do not require immediate action
+### Making Changes
+Since this application serves no traffic and will not be rolled back during development, all changes can be deployed as needed:
 
-### Breaking Changes
-1. Create a new versioned contract entry, such as `OrderCreatedIntegrationEvent v2`.
-2. Preserve the previous version unchanged.
-3. Publish `v1` and `v2` side-by-side from the producer.
-4. Update consumers incrementally, prioritizing internal subscribers before partner integrations.
-5. Monitor adoption through subscription inventories, contract tests, and message telemetry.
-6. Mark the older version as `deprecated` only after all required consumers validate the new version.
-7. Retire the older version after the announced sunset window and remove publication code in a scheduled cleanup release.
-
-## Recommended Migration Window
-- Internal consumers: 1-2 sprints
-- External partners: minimum 90-day notice unless a contractual SLA requires longer
-- High-risk financial or payout events: require dual-publish validation and rollback readiness before deprecation
+- **Non-breaking changes** (adding optional fields): Update schema and example payloads, deploy normally
+- **Breaking changes** (field removal, rename, semantic changes): Update all consumers in coordinated deployments where services are redeployed together
+- **No migration windows required**: Changes take effect immediately upon deployment
+- **No parallel publication needed**: Services can be updated without running multiple versions side-by-side
 
 ## Example: `OrderCreatedIntegrationEvent`
-- **v1**: baseline order creation payload for existing downstream subscribers
-- **v2**: adds seller attribution, commission, and payout routing fields for marketplace workflows
-- **Migration approach**: dual-publish `v1` and `v2`, keep `v1` stable, validate all subscribers against `v2`, then deprecate `v1` with a published sunset date
+- **Current version**: baseline order creation payload
+- **Changes approach**: Update schema directly in all services through coordinated deployment
+- **No versioning needed**: All services are updated together during development

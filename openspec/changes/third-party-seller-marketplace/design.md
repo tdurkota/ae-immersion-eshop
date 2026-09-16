@@ -14,7 +14,6 @@ We are extending this architecture to support third-party sellers alongside plat
 
 **Goals:**
 - Enable third-party sellers to register and list products
-- Maintain backward compatibility with existing platform products and order flows
 - Implement transparent commission tracking and payout ledger
 - Ensure role-based access control isolates seller data
 - Provide foundation for future enhancements (dashboards, analytics, KYC)
@@ -49,9 +48,9 @@ We are extending this architecture to support third-party sellers alongside plat
 **Decision**: Use single PostgreSQL database for Sellers.API, Catalog.API, and Ordering.API (same instance).
 
 **Rationale**:
-- Simplicity: Eliminates distributed transaction complexity
-- ACID transactions: Seller creation and initial product can transact together if needed
-- Migration path: Can shard into separate databases post-MVP without breaking APIs
+- Simplicity: Eliminates distributed transaction complexity for MVP
+- Clear event boundaries: Seller events can be published independently
+- Development flexibility: Can restructure without rollback concerns
 
 **Alternatives Considered**:
 - Separate database per service: Better isolation but introduces 2-phase commit complexity and operational overhead for MVP
@@ -63,9 +62,9 @@ We are extending this architecture to support third-party sellers alongside plat
 **Decision**: Add optional `seller_id (GUID, nullable)` to CatalogItem. NULL = platform product; UUID = seller product.
 
 **Rationale**:
-- Backward compatible: Existing queries work without modification (NULL is ignored in most filters)
-- Simple schema: No separate table needed; single query returns both platform and seller products
+- Simplicity: Minimal schema changes; can coexist with platform and seller products
 - Clear semantics: NULL explicitly means "platform owns this"
+- Straightforward queries: All products returned in single result set
 
 **Alternatives Considered**:
 - Separate table for seller products: Cleaner isolation but requires join on every query; harder to show mixed results
@@ -164,7 +163,7 @@ We are extending this architecture to support third-party sellers alongside plat
 |------|--------|-----------|
 | **Authorization Bypass** - seller can access other seller data | CRITICAL | Strong unit tests for authorization handlers; integration tests; manual spot-checks; code review required |
 | **Revenue Leakage** - commission calculation wrong, money lost | CRITICAL | Unit tests for all commission scenarios; reconciliation audit query; manual spot-checks on first orders; clear audit trail in database |
-| **Backward Compatibility** - existing queries break with seller_id | HIGH | seller_id is nullable; existing code doesn't require changes; comprehensive test coverage for both NULL and UUID cases |
+| **Backward Compatibility** - schema changes may require service coordination | MEDIUM | All services can be redeployed together during development; no traffic running; coordinated deployments ensure consistency
 | **Performance Degradation** - queries slow on large product set | MEDIUM | Index on seller_id in database; query performance testing; monitor query plans; consider caching if needed |
 | **Event Processing Failures** - payout entries not created if Sellers.API down | MEDIUM | Dead-letter queue for failed events; manual retry mechanism; detailed logging; Sellers.API treats event handler as critical |
 | **Seller Abuse** - bad actors register and sell counterfeit goods | MEDIUM | Admin suspension capability; audit logging of seller actions; plan KYC for Phase 2; monitor reports |
@@ -181,19 +180,11 @@ We are extending this architecture to support third-party sellers alongside plat
 5. Deploy UI updates (seller attribution, filtering)
 6. Enable seller registration and test flow end-to-end
 
-**Rollback Strategy**:
-- Sellers.API: Disable seller registration; existing products remain visible
-- Catalog.API: seller_id remains but ignored; no API changes are breaking
-- Ordering.API: Commission tracking is additive; old orders have NULL commission data (acceptable)
-- Identity.API: Seller role doesn't affect existing customers
-- No data loss required; all changes backward compatible
-
-**Canary Deployment** (Recommended):
-- Deploy to staging environment first
-- Run E2E test suite: seller registration → product listing → customer order
-- Enable seller registration to 5-10 test sellers in production
-- Monitor payout ledger reconciliation, authorization errors, event processing
-- Scale to full launch after 1-2 days of validation
+**Notes**:
+- Since the application serves no traffic during development, all changes can be deployed and adjusted as needed
+- Services may be redeployed at any time; no rollback concerns
+- Breaking changes across services should be coordinated through simultaneous deployments
+- Data can be reset if needed to accommodate schema or logic changes
 
 ## Open Questions
 
