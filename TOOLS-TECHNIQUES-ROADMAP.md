@@ -6,7 +6,7 @@
 graph LR
     A["🔍 EXPLORE<br/>Investigation"] -->|Findings| B["📋 PLAN<br/>OpenSpec"]
     B -->|Proposal + Design + Tasks| C["🏗️ STRUCTURE<br/>Perfection"]
-    C -->|Specs + Diagrams + ARDs| D["✅ REVIEW<br/>Approval"]
+    C -->|Specs + Diagrams + ADRs| D["✅ REVIEW<br/>Approval"]
     D -->|Approved Specs| E["💻 IMPLEMENTATION<br/>78 Tasks"]
     E -->|Code + Tests| F["🚀 DELIVERY"]
     
@@ -72,7 +72,7 @@ graph LR
 ┌──────────────────────────────────────────────────┐
 │ 🎯 Core Techniques                               │
 ├──────────────────────────────────────────────────┤
-│ ✓ Architecture Decision Records (ARDs)           │
+│ ✓ Architecture Decision Records (ADRs)           │
 │ ✓ API Contract-First Design                      │
 │ ✓ Event-Driven Architecture                      │
 │ ✓ RBAC/Authorization Matrix                      │
@@ -111,7 +111,7 @@ graph LR
 └──────────────────────────────────────────────────┘
     ↓
 📦 OUTPUTS (14 artifacts):
-  ├─ 4 ARDs
+  ├─ 4 ADRs
   ├─ 3 Diagrams (Mermaid)
   ├─ 5 API Contracts (OpenAPI)
   ├─ 1 RBAC Matrix
@@ -186,7 +186,7 @@ graph LR
 ```
 ESTABLISHED (Current Use)
 ├─ Spec-Driven Development ✓
-├─ Architecture Decision Records (ARDs) ✓
+├─ Architecture Decision Records (ADRs) ✓
 ├─ API-First/Contract-Driven Design ✓
 ├─ Event-Driven Architecture ✓
 ├─ Microservices Pattern ✓

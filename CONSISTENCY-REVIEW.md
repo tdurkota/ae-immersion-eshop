@@ -8,13 +8,13 @@
 
 ## Executive Summary
 
-All 15 artifacts (4 ARDs, 3 diagrams, 3 API contracts, 2 event schemas, 1 authorization matrix, 1 testing strategy, 1 OpenSpec proposal) **PASS consistency review**. Cross-domain alignment is strong. No blocking inconsistencies detected.
+All 15 artifacts (4 ADRs, 3 diagrams, 3 API contracts, 2 event schemas, 1 authorization matrix, 1 testing strategy, 1 OpenSpec proposal) **PASS consistency review**. Cross-domain alignment is strong. No blocking inconsistencies detected.
 
 **Total Checks:** 32 | **Passed:** 31 | **Minor Findings:** 1
 
 ---
 
-## 1. ARDs ↔ Diagrams
+## 1. ADRs ↔ Diagrams
 
 ### Check: ADR 1 → Diagram 1 (Sellers.API as separate service)
 
@@ -162,7 +162,7 @@ OpenSpec directory lists 8 spec files: `seller-management`, `seller-products`, `
 - Seller authentication → JWT seller_id + Seller role ✓
 **All proposal changes accounted for.**
 
-### Check: Cross-references between ARDs are documented
+### Check: Cross-references between ADRs are documented
 
 ✅ **PASS** - Each ADR includes "Related Decisions" section:
 - ADR 1 → ADR 2, ADR 3, ADR 4 ✓
@@ -202,7 +202,7 @@ OpenSpec directory lists 8 spec files: `seller-management`, `seller-products`, `
 
 | Check Category | Total | Pass | Issues |
 |---|---|---|---|
-| ARDs ↔ Diagrams | 4 | 4 | 0 |
+| ADRs ↔ Diagrams | 4 | 4 | 0 |
 | Diagrams ↔ API Contracts | 3 | 3 | 0 |
 | API Contracts ↔ Events | 3 | 3 | 0 |
 | Authorization Matrix ↔ API | 4 | 4 | 0 |
@@ -236,9 +236,9 @@ Test: Support user cannot process payouts (403)
 
 ## Recommendations for Completeness
 
-### 1. Cross-Reference Links in ARDs
+### 1. Cross-Reference Links in ADRs
 **Priority:** Low  
-**Action:** Add hyperlinks in each ADR's "Related Decisions" section to the other ARDs for better navigation in documentation systems.
+**Action:** Add hyperlinks in each ADR's "Related Decisions" section to the other ADRs for better navigation in documentation systems.
 
 ### 2. Seller Status Validation in API Contracts
 **Priority:** Medium  
