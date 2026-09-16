@@ -203,30 +203,6 @@ jobs:
   #         name: e2e-test-results
   #         path: test-results/
 
-  # notify-linear:
-  #   name: Notify Linear
-  #   runs-on: ubuntu-latest
-  #   needs: [ build-and-test ]
-  #   if: always()
-    
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Notify Linear of Build Status
-  #       run: |
-  #         curl -X POST ${{ secrets.LINEAR_API_ENDPOINT }} \
-  #           -H "Authorization: Bearer ${{ secrets.LINEAR_API_KEY }}" \
-  #           -H "Content-Type: application/json" \
-  #           -d '{
-  #             "query": "mutation CreateComment($issueId: String!, $body: String!) { issueAddComment(issueId: $issueId, body: $body) { success } }",
-  #             "variables": {
-  #               "issueId": "${{ secrets.LINEAR_BUILD_ISSUE_ID }}",
-  #               "body": "Build ${{ github.run_id }} - Status: ${{ job.status }} - Commit: ${{ github.sha }}"
-  #             }
-  #           }'
-  #       continue-on-error: true
-
   # TODO: Enable marketplace features build after initial deployment is working
   # build-marketplace-features:
   #   name: Build Marketplace Features
