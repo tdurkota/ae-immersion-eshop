@@ -46,12 +46,12 @@
 
 ## 7. Ordering.API: Seller Tracking and Commission
 
-- [ ] 7.1 Add SellerId and CommissionRate (decimal) fields to OrderLineItem entity and create migration and verify migration applies cleanly
-- [ ] 7.2 Create CommissionService with CalculateCommission(grossAmount, commissionRate) method and unit tests for edge cases (rounding, zero amounts, decimal precision) and verify tests pass
-- [ ] 7.3 Update OrderService to capture seller_id and commission_rate on order line items at order creation time and verify commission amounts calculated correctly
-- [ ] 7.4 Create unit tests for multi-seller orders (items from multiple sellers with different rates) and verify commission split is correct
-- [ ] 7.5 Extend order response DTOs to include seller_id and commission info per line item and verify order details show commission breakdown
-- [ ] 7.6 Update order validation to check seller status (reject orders from suspended/inactive sellers) and verify suspended sellers cannot receive new orders
+- [x] 7.1 Add SellerId and CommissionRate (decimal) fields to OrderLineItem entity and create migration and verify migration applies cleanly
+- [x] 7.2 Create CommissionService with CalculateCommission(grossAmount, commissionRate) method and unit tests for edge cases (rounding, zero amounts, decimal precision) and verify tests pass
+- [x] 7.3 Update OrderService to capture seller_id and commission_rate on order line items at order creation time and verify commission amounts calculated correctly
+- [x] 7.4 Create unit tests for multi-seller orders (items from multiple sellers with different rates) and verify commission split is correct
+- [x] 7.5 Extend order response DTOs to include seller_id and commission info per line item and verify order details show commission breakdown
+- [x] 7.6 Update order validation to check seller status (reject orders from suspended/inactive sellers) and verify suspended sellers cannot receive new orders
 
 ## 8. Event-Driven Integration: Order Events
 
