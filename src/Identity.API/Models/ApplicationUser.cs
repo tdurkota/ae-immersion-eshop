@@ -27,5 +27,8 @@
         public string Name { get; set; }
         [Required]
         public string LastName { get; set; }
+        
+        // Seller identity: nullable GUID to link user to seller account
+        public Guid? SellerId { get; set; }
     }
 }
