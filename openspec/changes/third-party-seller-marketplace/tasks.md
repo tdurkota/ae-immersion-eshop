@@ -1,11 +1,11 @@
 ## 1. Foundation: Database Schema and Domain Models
 
-- [ ] 1.1 Create Seller domain entity with SellerId, Name, Email, Description, PhoneNumber, BankAccountInfo, CommissionRate, Status, CreatedAt, UpdatedAt properties and verify entity compiles
-- [ ] 1.2 Create EF Core DbContext for Sellers with seller configuration (table name, constraints, indexes) and verify DbContext initializes without error
-- [ ] 1.3 Create database migration for Seller table with constraints (email unique, status enum, commission_rate >= 0 && <= 1) and verify migration generates correct SQL
-- [ ] 1.4 Add SellerId (GUID, nullable) to CatalogItem entity and create migration; verify existing products have NULL seller_id after migration
-- [ ] 1.5 Create SellerPayout entity with PayoutId, SellerId, OrderId, OrderLineItemId, GrossAmount, CommissionAmount, SellerAmount, Status, CreatedAt, PaidAt and verify entity compiles
-- [ ] 1.6 Create database migration for SellerPayout table with indexes on (SellerId, CreatedAt) and verify migration generates correct SQL
+- [x] 1.1 Create Seller domain entity with SellerId, Name, Email, Description, PhoneNumber, BankAccountInfo, CommissionRate, Status, CreatedAt, UpdatedAt properties and verify entity compiles
+- [x] 1.2 Create EF Core DbContext for Sellers with seller configuration (table name, constraints, indexes) and verify DbContext initializes without error
+- [x] 1.3 Create database migration for Seller table with constraints (email unique, status enum, commission_rate >= 0 && <= 1) and verify migration generates correct SQL
+- [x] 1.4 Add SellerId (GUID, nullable) to CatalogItem entity and create migration; verify existing products have NULL seller_id after migration
+- [x] 1.5 Create SellerPayout entity with PayoutId, SellerId, OrderId, OrderLineItemId, GrossAmount, CommissionAmount, SellerAmount, Status, CreatedAt, PaidAt and verify entity compiles
+- [x] 1.6 Create database migration for SellerPayout table with indexes on (SellerId, CreatedAt) and verify migration generates correct SQL
 
 ## 2. Sellers.API Microservice Setup
 
