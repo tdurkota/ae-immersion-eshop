@@ -136,8 +136,12 @@ jobs:
         run: |
           # Get the webapp FQDN from deployed Container App
           WEBAPP_URL=$(az containerapp show --name webapp --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --query properties.configuration.ingress.fqdn -o tsv)
+          if [ -z "$WEBAPP_URL" ]; then
+            echo "ERROR: Failed to retrieve webapp FQDN"
+            exit 1
+          fi
           echo "url=https://$WEBAPP_URL" >> $GITHUB_OUTPUT
-          echo "Staging URL: https://$WEBAPP_URL"
+          echo "✅ Staging URL: https://$WEBAPP_URL"
 
   e2e-tests:
     name: E2E Tests (Marketplace Flow)
@@ -154,6 +158,9 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+  
+      - name: Install npm dependencies
+        run: npm ci
   
       - name: Install Playwright dependencies
         run: npx playwright install --with-deps
