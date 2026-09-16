@@ -30,12 +30,12 @@
 
 ## 5. Catalog.API: Seller Product Management
 
-- [ ] 5.1 Update CatalogItem model to include Seller navigation property and verify model loads related seller data
-- [ ] 5.2 Implement POST /api/sellers/{id}/products (seller adds product) endpoint with authorization and seller status check and verify seller can add product, suspended seller gets 403
-- [ ] 5.3 Implement PUT /api/sellers/{id}/products/{productId} (seller updates product) endpoint with authorization and verify seller can only update own products
-- [ ] 5.4 Implement DELETE /api/sellers/{id}/products/{productId} (seller deletes product) endpoint with authorization and verify product is removed from catalog
-- [ ] 5.5 Implement GET /api/sellers/{id}/products (seller views own products) endpoint with pagination and verify returns seller's products with pagination support
-- [ ] 5.6 Add seller_id filtering to existing GET /api/products endpoint and verify customers can filter by seller_id query parameter
+- [x] 5.1 Update CatalogItem model to include Seller navigation property and verify model loads related seller data
+- [x] 5.2 Implement POST /api/sellers/{id}/products (seller adds product) endpoint with authorization and seller status check and verify seller can add product, suspended seller gets 403
+- [x] 5.3 Implement PUT /api/sellers/{id}/products/{productId} (seller updates product) endpoint with authorization and verify seller can only update own products
+- [x] 5.4 Implement DELETE /api/sellers/{id}/products/{productId} (seller deletes product) endpoint with authorization and verify product is removed from catalog
+- [x] 5.5 Implement GET /api/sellers/{id}/products (seller views own products) endpoint with pagination and verify returns seller's products with pagination support
+- [x] 5.6 Add seller_id filtering to existing GET /api/products endpoint and verify customers can filter by seller_id query parameter
 
 ## 6. Catalog.API: Seller Attribution in Responses
 
