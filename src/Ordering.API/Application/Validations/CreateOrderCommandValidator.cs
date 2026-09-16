@@ -1,8 +1,15 @@
 ﻿namespace eShop.Ordering.API.Application.Validations;
+
+using eShop.Ordering.API.Application.Services;
+
 public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
 {
-    public CreateOrderCommandValidator(ILogger<CreateOrderCommandValidator> logger)
+    private readonly ISellerService _sellerService;
+
+    public CreateOrderCommandValidator(ILogger<CreateOrderCommandValidator> logger, ISellerService sellerService = null)
     {
+        _sellerService = sellerService;
+
         RuleFor(command => command.City).NotEmpty();
         RuleFor(command => command.Street).NotEmpty();
         RuleFor(command => command.State).NotEmpty();
@@ -14,6 +21,14 @@ public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
         RuleFor(command => command.CardSecurityNumber).NotEmpty().Length(3);
         RuleFor(command => command.CardTypeId).NotEmpty();
         RuleFor(command => command.OrderItems).Must(ContainOrderItems).WithMessage("No order items found");
+
+        // Add async validation for seller status if service is available
+        if (_sellerService != null)
+        {
+            RuleFor(command => command.OrderItems)
+                .MustAsync(ValidateAllSellersAreActive)
+                .WithMessage("One or more sellers in this order are inactive or suspended");
+        }
 
         if (logger.IsEnabled(LogLevel.Trace))
         {
@@ -29,5 +44,23 @@ public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
     private bool ContainOrderItems(IEnumerable<OrderItemDTO> orderItems)
     {
         return orderItems.Any();
+    }
+
+    private async Task<bool> ValidateAllSellersAreActive(IEnumerable<OrderItemDTO> orderItems, CancellationToken cancellationToken)
+    {
+        if (_sellerService == null)
+            return true;
+
+        var sellerIds = orderItems.Select(item => item.SellerId).Distinct();
+
+        foreach (var sellerId in sellerIds)
+        {
+            if (!await _sellerService.IsSellerActiveAsync(sellerId, cancellationToken))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

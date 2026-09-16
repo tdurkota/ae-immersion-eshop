@@ -9,5 +9,7 @@ public class BasketItem
     public decimal OldUnitPrice { get; init; }
     public int Quantity { get; init; }
     public string PictureUrl { get; init; }
+    public int SellerId { get; init; }
+    public decimal CommissionRate { get; init; }
 }
 
