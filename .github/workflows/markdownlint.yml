@@ -23,4 +23,4 @@ jobs:
       run: |
         echo "::add-matcher::.github/workflows/markdownlint-problem-matcher.json"
         npm i -g markdownlint-cli
-        markdownlint --ignore '.dotnet/' --ignore '.agents/' --ignore 'docs/' --ignore 'DECOUPLED_BUSINESS_RULES_BRD.md' --ignore 'MULTI_TENANCY_ISOLATION_BRD.md' '**/*.md'
+        markdownlint --ignore '.dotnet/' --ignore '.agents/' --ignore 'docs/' --ignore 'DECOUPLED_BUSINESS_RULES_BRD.md' --ignore 'MULTI_TENANCY_ISOLATION_BRD.md' --ignore 'adversarial-review_*.md' --ignore 'TEST-RESULTS_*.md' '**/*.md'
