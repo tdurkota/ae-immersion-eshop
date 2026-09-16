@@ -54,5 +54,5 @@ Post-MVP, we can split the shared database by introducing service-owned schemas 
 
 ## Related Decisions
 
-- **ARD 1:** Separate Sellers.API Microservice
-- **ARD 3:** Nullable SellerId Design Pattern
+- **ADR 1:** Separate Sellers.API Microservice
+- **ADR 3:** Nullable SellerId Design Pattern

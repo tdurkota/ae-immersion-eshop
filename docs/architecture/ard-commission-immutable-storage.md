@@ -61,5 +61,5 @@ Rejected because it weakens the audit trail and makes discrepancies harder to de
 
 ## Related Decisions
 
-- **ARD 1:** Separate Sellers.API Microservice
-- **ARD 2:** Single PostgreSQL Database for MVP
+- **ADR 1:** Separate Sellers.API Microservice
+- **ADR 2:** Single PostgreSQL Database for MVP

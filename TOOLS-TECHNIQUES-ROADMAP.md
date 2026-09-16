@@ -89,7 +89,7 @@ graph LR
 │ • Fleet mode (parallel execution)                │
 │                                                  │
 │ SUB-AGENTS (14 parallel):                        │
-│ • 4 x ARD Generators (Haiku 4.5)                 │
+│ • 4 x ADR Generators (Haiku 4.5)                 │
 │ • 2 x Diagram Creators (Haiku 4.5)               │
 │ • 4 x API Contract Writers (Haiku 4.5)           │
 │ • 1 x Authorization Matrix (Haiku 4.5)           │
@@ -98,7 +98,7 @@ graph LR
 │                                                  │
 │ REVIEW FLEET (5 parallel):                       │
 │ • 5 x Validation Agents (Haiku 4.5)              │
-│   - ARD quality checker                          │
+│   - ADR quality checker                          │
 │   - Diagram validator                            │
 │   - API contract reviewer                        │
 │   - Auth/Testing aligner                         │
@@ -248,7 +248,7 @@ Phase 3: STRUCTURE PERFECTION
 ├──────────────────────────────────────┤
 │ Spec-Driven Development      ████ 95%│
 │ Parallel Fleet Execution     ████ 94%│
-│ ARD/Design Patterns          ████ 96%│
+│ ADR/Design Patterns          ████ 96%│
 │ API Contracts                ████ 98%│
 │ Cross-Consistency Validation ████ 95%│
 │ Overall Readiness for Impl.  ████ 95%│

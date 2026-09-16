@@ -45,6 +45,6 @@ The main risk is network latency between services. We mitigate that by keeping s
 
 ## Related Decisions
 
-- **ARD 2:** Single PostgreSQL Database for MVP
-- **ARD 3:** Nullable SellerId Design Pattern
-- **ARD 4:** Commission Immutable Storage at Order Time
+- **ADR 2:** Single PostgreSQL Database for MVP
+- **ADR 3:** Nullable SellerId Design Pattern
+- **ADR 4:** Commission Immutable Storage at Order Time

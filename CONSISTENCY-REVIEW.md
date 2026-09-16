@@ -16,21 +16,21 @@ All 15 artifacts (4 ARDs, 3 diagrams, 3 API contracts, 2 event schemas, 1 author
 
 ## 1. ARDs ↔ Diagrams
 
-### Check: ARD 1 → Diagram 1 (Sellers.API as separate service)
+### Check: ADR 1 → Diagram 1 (Sellers.API as separate service)
 
-✅ **PASS** - ARD 1 clearly establishes Sellers.API as a dedicated microservice with "clear separation of concerns" and "independent deployments." Service Integration Flow (Diagram 1) shows Sellers.API as a distinct box in the service topology, participating in seller registration (step 1-3) and payout ledger events (steps 13-14). **Alignment confirmed.**
+✅ **PASS** - ADR 1 clearly establishes Sellers.API as a dedicated microservice with "clear separation of concerns" and "independent deployments." Service Integration Flow (Diagram 1) shows Sellers.API as a distinct box in the service topology, participating in seller registration (step 1-3) and payout ledger events (steps 13-14). **Alignment confirmed.**
 
-### Check: ARD 2 → Diagram 2 (Single shared PostgreSQL)
+### Check: ADR 2 → Diagram 2 (Single shared PostgreSQL)
 
-✅ **PASS** - ARD 2 states: "All three services will connect to the same PostgreSQL deployment." Schema diagram shows a single `Postgres` instance with all tables (Seller, CatalogItem, OrderLineItem, SellerPayout, Order) mapped to it. Cross-references between tables (FK relationships) reinforce shared schema strategy. **Alignment confirmed.**
+✅ **PASS** - ADR 2 states: "All three services will connect to the same PostgreSQL deployment." Schema diagram shows a single `Postgres` instance with all tables (Seller, CatalogItem, OrderLineItem, SellerPayout, Order) mapped to it. Cross-references between tables (FK relationships) reinforce shared schema strategy. **Alignment confirmed.**
 
-### Check: ARD 3 → Diagram 2 (Nullable seller_id on CatalogItem)
+### Check: ADR 3 → Diagram 2 (Nullable seller_id on CatalogItem)
 
-✅ **PASS** - ARD 3 specifies: "Add an optional `seller_id` column to `CatalogItem`. The column will be a GUID and nullable." Schema diagram shows `CatalogItem.SellerId` as "guid SellerId FK 'NULL → Seller.SellerId'" with the comment "nullable to preserve platform-owned catalog items." **Alignment confirmed.**
+✅ **PASS** - ADR 3 specifies: "Add an optional `seller_id` column to `CatalogItem`. The column will be a GUID and nullable." Schema diagram shows `CatalogItem.SellerId` as "guid SellerId FK 'NULL → Seller.SellerId'" with the comment "nullable to preserve platform-owned catalog items." **Alignment confirmed.**
 
-### Check: ARD 4 → Diagram 2 + Diagram 1 (Immutable commission at order time)
+### Check: ADR 4 → Diagram 2 + Diagram 1 (Immutable commission at order time)
 
-✅ **PASS** - ARD 4 specifies storage of `commission_rate`, `commission_amount`, and `seller_amount` as immutable snapshots on OrderLineItem. Schema diagram shows all three fields on OrderLineItem with comment "immutable snapshot." Service flow shows commission values stored when order is created (step 11). **Alignment confirmed.**
+✅ **PASS** - ADR 4 specifies storage of `commission_rate`, `commission_amount`, and `seller_amount` as immutable snapshots on OrderLineItem. Schema diagram shows all three fields on OrderLineItem with comment "immutable snapshot." Service flow shows commission values stored when order is created (step 11). **Alignment confirmed.**
 
 ---
 
@@ -139,10 +139,10 @@ Integration tests validate seller-owned product workflows and payout ledger crea
 ### Check: Proposal lists 8 capabilities → Specs and artifacts cover all 8
 
 ✅ **PASS** - Proposal lists:
-1. `seller-management` → ARD 1, Sellers API, Seller table ✓
+1. `seller-management` → ADR 1, Sellers API, Seller table ✓
 2. `seller-products` → Catalog API extensions, CatalogItem.seller_id ✓
 3. `seller-orders` → Ordering API, Order visibility ✓
-4. `seller-commission` → ARD 4, OrderLineItem commission fields ✓
+4. `seller-commission` → ADR 4, OrderLineItem commission fields ✓
 5. `seller-payout-tracking` → SellerPayout table, SellerPayoutCreated event ✓
 6. `product-catalog` (extended) → Catalog API contract, seller attribution ✓
 7. `orders` (extended) → Ordering API contract, seller/commission fields ✓
@@ -157,18 +157,18 @@ OpenSpec directory lists 8 spec files: `seller-management`, `seller-products`, `
 - Seller product listing → Catalog API extensions ✓
 - Product attribution → Schema with seller_id ✓
 - Order attribution → Ordering API + OrderLineItem.seller_id ✓
-- Commission tracking → ARD 4, OrderLineItem commission fields ✓
+- Commission tracking → ADR 4, OrderLineItem commission fields ✓
 - Hybrid catalog → Schema allows NULL seller_id ✓
 - Seller authentication → JWT seller_id + Seller role ✓
 **All proposal changes accounted for.**
 
 ### Check: Cross-references between ARDs are documented
 
-✅ **PASS** - Each ARD includes "Related Decisions" section:
-- ARD 1 → ARD 2, ARD 3, ARD 4 ✓
-- ARD 2 → ARD 1, ARD 3 ✓
-- ARD 3 → ARD 1, ARD 2 ✓
-- ARD 4 → ARD 1, ARD 2 ✓
+✅ **PASS** - Each ADR includes "Related Decisions" section:
+- ADR 1 → ADR 2, ADR 3, ADR 4 ✓
+- ADR 2 → ADR 1, ADR 3 ✓
+- ADR 3 → ADR 1, ADR 2 ✓
+- ADR 4 → ADR 1, ADR 2 ✓
 **Decision traceability is complete.**
 
 ---
@@ -190,7 +190,7 @@ OpenSpec directory lists 8 spec files: `seller-management`, `seller-products`, `
 ### Check: Suspended seller handling
 
 ✅ **PASS** - 
-- ARD 4: "Seller status changes to suspended → Orders referencing that seller still show commission (immutable)" ✓
+- ADR 4: "Seller status changes to suspended → Orders referencing that seller still show commission (immutable)" ✓
 - Authorization Matrix: "Seller account status can be changed by Admin only" ✓
 - Schema diagram: `Seller.Status` enum includes "suspended" ✓
 - Service flow: No feedback loop shown for revalidating commission after seller suspension (correct, as commission is immutable) ✓
@@ -238,7 +238,7 @@ Test: Support user cannot process payouts (403)
 
 ### 1. Cross-Reference Links in ARDs
 **Priority:** Low  
-**Action:** Add hyperlinks in each ARD's "Related Decisions" section to the other ARDs for better navigation in documentation systems.
+**Action:** Add hyperlinks in each ADR's "Related Decisions" section to the other ARDs for better navigation in documentation systems.
 
 ### 2. Seller Status Validation in API Contracts
 **Priority:** Medium  

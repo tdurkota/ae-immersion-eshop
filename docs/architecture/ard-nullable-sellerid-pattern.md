@@ -43,5 +43,5 @@ The main risk is subtle `NULL` semantics. Developers must consistently remember 
 
 ## Related Decisions
 
-- **ARD 1:** Separate Sellers.API Microservice
-- **ARD 2:** Single PostgreSQL Database for MVP
+- **ADR 1:** Separate Sellers.API Microservice
+- **ADR 2:** Single PostgreSQL Database for MVP
