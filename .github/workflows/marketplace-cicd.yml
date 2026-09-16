@@ -168,7 +168,7 @@ jobs:
       - name: Run E2E tests
         run: npm run test:e2e
         env:
-          STAGING_URL: ${{ needs.deploy-staging.outputs.staging-url }}
+          PLAYWRIGHT_BASE_URL: ${{ needs.deploy-staging.outputs.staging-url }}
   
       - name: Upload E2E test results
         if: always()
