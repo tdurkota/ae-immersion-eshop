@@ -16,10 +16,10 @@
 
 ## 3. Identity & Authentication: Seller Accounts
 
-- [ ] 3.1 Extend Identity.API to support seller role by adding seller role to role enum and verify Identity.API compiles
-- [ ] 3.2 Add seller_id claim to JWT token generation logic and verify seller login returns token with seller role and seller_id
-- [ ] 3.3 Create unit tests for seller authentication (valid login, invalid password, role claim included) and verify all tests pass
-- [ ] 3.4 Document seller authentication endpoint in API docs and verify Swagger/OpenAPI shows seller login endpoint
+- [x] 3.1 Extend Identity.API to support seller role by adding seller role to role enum and verify Identity.API compiles
+- [x] 3.2 Add seller_id claim to JWT token generation logic and verify seller login returns token with seller role and seller_id
+- [x] 3.3 Create unit tests for seller authentication (valid login, invalid password, role claim included) and verify all tests pass
+- [x] 3.4 Document seller authentication endpoint in API docs and verify Swagger/OpenAPI shows seller login endpoint
 
 ## 4. Sellers.API: CRUD Operations
 
