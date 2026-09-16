@@ -143,6 +143,21 @@ We are extending this architecture to support third-party sellers alongside plat
 
 **Implementation**: Catalog queries return all products; UI optional filter; product detail shows seller info
 
+### 9. Multi-Seller Checkout (Single Transaction)
+**Decision**: Customers can checkout with items from multiple sellers in a single transaction. One order is created with multiple line items (one per seller) and paid in a single payment to the platform payment processor.
+
+**Rationale**:
+- Simplified UX: Customers expect a unified checkout experience (like Amazon/eBay)
+- Platform payment processing: Single payment simplifies reconciliation and reduces payment processor fees
+- Commission split at order time: Each line item stores seller commission separately, enabling proper revenue attribution
+- Multi-seller order specification: Orders spec explicitly requires multi-seller orders to be supported
+
+**Alternatives Considered**:
+- Separate checkouts per seller: Each seller gets a checkout flow; worse UX; customers must check out multiple times
+- Seller-specific payment processing: Each seller has their own payment processor; operational complexity; reconciliation nightmare
+
+**Implementation**: OrderService accepts multi-seller baskets; creates single order with multiple line items; payment processor receives order total; commission split happens at line-item level (see Decision 4)
+
 ## Risks / Trade-offs
 
 | Risk | Impact | Mitigation |
@@ -186,4 +201,3 @@ We are extending this architecture to support third-party sellers alongside plat
 2. **Seller Suspension Retroactivity**: When a seller is suspended, should active orders continue fulfillment? Assume yes (orders complete, seller just blocked from new orders).
 3. **Bank Account Collection**: In MVP, do we collect seller bank details during registration, or defer until Phase 2? Assuming deferred (placeholder only).
 4. **Tax Handling**: Are we collecting seller tax IDs? Out of scope for MVP; assume platform handles tax per-jurisdiction.
-5. **Multi-Seller Order Consolidation**: Can customer checkout with multiple sellers in one transaction, or do they check out separately? Assuming single transaction with platform payment processor.
