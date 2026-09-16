@@ -16,6 +16,16 @@
         <span class='catalog-product-content'>
             <span class='name'>@Item.Name</span>
             <span class='price'>$@Item.Price.ToPriceDisplay()</span>
+            <span class='seller'>
+                @if (Item.SellerId.HasValue)
+                {
+                    <span class="seller-name">@Item.SellerName</span>
+                }
+                else
+                {
+                    <span class="seller-name official-store">Official Store</span>
+                }
+            </span>
         </span>
     </a>
 </div>

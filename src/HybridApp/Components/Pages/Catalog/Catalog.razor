@@ -7,7 +7,7 @@
 <SectionContent SectionName="page-header-subtitle">Start the season with the latest in clothing and equipment.</SectionContent>
 
 <div class="catalog">
-    <eShop.HybridApp.Components.Pages.Catalog.CatalogSearch BrandId="@BrandId" ItemTypeId="@ItemTypeId" />
+    <eShop.HybridApp.Components.Pages.Catalog.CatalogSearch BrandId="@BrandId" ItemTypeId="@ItemTypeId" SellerId="@SellerId" />
 
     @if (catalogResult is null)
     {
@@ -45,6 +45,9 @@
     [SupplyParameterFromQuery(Name = "type")]
     public int? ItemTypeId { get; set; }
 
+    [SupplyParameterFromQuery(Name = "seller")]
+    public Guid? SellerId { get; set; }
+
     CatalogResult? catalogResult;
 
     static IEnumerable<int> GetVisiblePageIndexes(CatalogResult result)
@@ -56,6 +59,7 @@
             Page.GetValueOrDefault(1) - 1,
             PageSize,
             BrandId is null ? null : [BrandId.Value],
-            ItemTypeId is null ? null : [ItemTypeId.Value]);
+            ItemTypeId is null ? null : [ItemTypeId.Value],
+            SellerId is null ? null : [SellerId.Value]);
     }
 }

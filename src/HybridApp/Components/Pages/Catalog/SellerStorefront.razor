@@ -1,0 +1,116 @@
+@page "/sellers/{sellerIdString}"
+@inject NavigationManager Nav
+@inject eShop.HybridApp.Services.CatalogService CatalogService
+
+<PageTitle>@SellerName - Store</PageTitle>
+
+<div class="seller-storefront">
+    @if (isLoading)
+    {
+        <p>Loading...</p>
+    }
+    else if (!sellerId.HasValue || sellerId == Guid.Empty)
+    {
+        <p>Invalid seller ID</p>
+    }
+    else if (catalogResult is null)
+    {
+        <p>Seller not found or has no products</p>
+    }
+    else
+    {
+        <div class="seller-header">
+            <h1>@SellerName</h1>
+            <p class="seller-subtitle">@catalogResult.Count product@(catalogResult.Count != 1 ? "s" : "") available</p>
+        </div>
+
+        <div class="catalog-items">
+            @foreach (var item in catalogResult.Data)
+            {
+                <CatalogListItem Item="@item" />
+            }
+        </div>
+
+        @if (catalogResult.Count > 0)
+        {
+            <div class="page-links">
+                @foreach (var pageIndex in GetVisiblePageIndexes(catalogResult))
+                {
+                    <NavLink ActiveClass="active-page" Match="@NavLinkMatch.All" 
+                             href="@GetPageUri(pageIndex)">
+                        @pageIndex
+                    </NavLink>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    const int PageSize = 9;
+
+    [Parameter]
+    public string? SellerIdString { get; set; }
+
+    [SupplyParameterFromQuery]
+    public int? Page { get; set; }
+
+    private Guid? sellerId;
+    private string SellerName { get; set; } = "Store";
+    private CatalogResult? catalogResult;
+    private bool isLoading = true;
+
+    static IEnumerable<int> GetVisiblePageIndexes(CatalogResult result)
+        => Enumerable.Range(1, (int)Math.Ceiling(1.0 * result.Count / PageSize));
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(SellerIdString) || !Guid.TryParse(SellerIdString, out var parsedId))
+        {
+            isLoading = false;
+            return;
+        }
+
+        sellerId = parsedId;
+
+        // Load products from this seller
+        if (sellerId == Guid.Empty)
+        {
+            SellerName = "Official Store";
+        }
+        else
+        {
+            // In a real app, would fetch seller name from API
+            SellerName = sellerId.Value.ToString().Substring(0, 8);
+        }
+
+        await LoadProducts();
+        isLoading = false;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (sellerId.HasValue)
+        {
+            await LoadProducts();
+        }
+    }
+
+    private async Task LoadProducts()
+    {
+        if (!sellerId.HasValue)
+            return;
+
+        catalogResult = await CatalogService.GetCatalogItems(
+            Page.GetValueOrDefault(1) - 1,
+            PageSize,
+            null,
+            null,
+            [sellerId.Value]);
+    }
+
+    private string GetPageUri(int pageIndex)
+    {
+        return Nav.GetUriWithQueryParameter("page", pageIndex == 1 ? null : pageIndex);
+    }
+}

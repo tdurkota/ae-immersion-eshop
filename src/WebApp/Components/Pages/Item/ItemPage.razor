@@ -34,6 +34,18 @@
                 <dl class="item-meta">
                     <dt>Brand</dt>
                     <dd>@item.CatalogBrand?.Brand</dd>
+                    <dt>Sold by</dt>
+                    <dd>
+                        @if (item.SellerId.HasValue)
+                        {
+                            <a href="@GetSellerStorefrontUrl()">@item.SellerName</a>
+                            <a href="@GetSellerStorefrontUrl()" class="seller-products-link">(View all products)</a>
+                        }
+                        else
+                        {
+                            <span class="official-store">Official Store</span>
+                        }
+                    </dd>
                 </dl>
 
                 <form class="add-to-cart" method="post" @formname="add-to-cart" @onsubmit="@AddToCartAsync" data-enhance="@isLoggedIn">
@@ -155,6 +167,15 @@ else if (notFound)
             await BasketState.AddAsync(item);
             await UpdateNumInCartAsync();
         }
+    }
+
+    private string GetSellerStorefrontUrl()
+    {
+        if (item?.SellerId.HasValue == true)
+        {
+            return $"/sellers/{item.SellerId}";
+        }
+        return "/";
     }
 
     private async Task UpdateNumInCartAsync()

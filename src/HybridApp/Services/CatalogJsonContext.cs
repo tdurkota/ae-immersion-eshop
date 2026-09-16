@@ -10,6 +10,9 @@ namespace eShop.HybridApp.Services;
 [JsonSerializable(typeof(CatalogItemType[]))]
 [JsonSerializable(typeof(CatalogBrand))]
 [JsonSerializable(typeof(CatalogItemType))]
+[JsonSerializable(typeof(CatalogFacets))]
+[JsonSerializable(typeof(SellerFacet))]
+[JsonSerializable(typeof(List<SellerFacet>))]
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 public partial class CatalogJsonContext : JsonSerializerContext
 {
