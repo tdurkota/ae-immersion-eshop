@@ -92,9 +92,9 @@
 
 ## 13. Documentation & Deployment
 
-- [ ] 13.1 Document Sellers.API endpoints in OpenAPI/Swagger with request/response examples and verify Swagger UI displays all endpoints correctly
-- [ ] 13.2 Update README.md with seller registration and product listing walkthrough and verify documentation is clear to new users
-- [ ] 13.3 Create admin documentation for suspending sellers and viewing payout reports and verify documentation covers key operations
-- [ ] 13.4 Prepare deployment checklist (Aspire configuration, migration strategy, smoke tests) and verify all deployment steps are documented
-- [ ] 13.5 Deploy to staging environment and run full E2E test suite and verify all tests pass in staging
-- [ ] 13.6 Enable seller registration to 5 test sellers in production, monitor payout ledger and authorization errors for 24 hours, then scale to full launch and verify no critical issues found
+- [x] 13.1 Document Sellers.API endpoints in OpenAPI/Swagger with request/response examples and verify Swagger UI displays all endpoints correctly
+- [x] 13.2 Update README.md with seller registration and product listing walkthrough and verify documentation is clear to new users
+- [x] 13.3 Create admin documentation for suspending sellers and viewing payout reports and verify documentation covers key operations
+- [x] 13.4 Prepare deployment checklist (Aspire configuration, migration strategy, smoke tests) and verify all deployment steps are documented
+- [x] 13.5 Deploy to staging environment and run full E2E test suite and verify all tests pass in staging
+- [x] 13.6 Enable seller registration to 5 test sellers in production, monitor payout ledger and authorization errors for 24 hours, then scale to full launch and verify no critical issues found

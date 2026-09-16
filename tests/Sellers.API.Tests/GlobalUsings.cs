@@ -14,3 +14,4 @@ global using eShop.Sellers.API.Requests;
 global using eShop.Sellers.API.Responses;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.Http;
+global using System.Text.Json;
