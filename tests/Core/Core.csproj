@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" />
     <PackageReference Include="Aspire.Hosting.Testing" />
+    <PackageReference Include="xunit.extensibility.core" />
     
     <!-- Database -->
     <PackageReference Include="Microsoft.EntityFrameworkCore" />

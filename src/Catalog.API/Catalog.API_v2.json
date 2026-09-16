@@ -51,7 +51,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/CatalogItem"
+                    "$ref": "#/components/schemas/ProductResponseDto"
                   }
                 }
               }
@@ -107,7 +107,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CatalogItem"
+                  "$ref": "#/components/schemas/ProductResponseDto"
                 }
               }
             }
@@ -644,7 +644,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaginatedItemsOfCatalogItem"
+                  "$ref": "#/components/schemas/PaginatedItemsOfProductResponseDto"
                 }
               }
             }
@@ -726,7 +726,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaginatedItemsOfCatalogItem"
+                  "$ref": "#/components/schemas/PaginatedItemsOfProductResponseDto"
                 }
               }
             }
@@ -749,6 +749,26 @@
     "schemas": {
       "CatalogBrand": {
         "required": [
+          "brand"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "brand": {
+            "type": "string"
+          }
+        }
+      },
+      "CatalogBrandDto": {
+        "required": [
+          "id",
           "brand"
         ],
         "type": "object",
@@ -910,6 +930,16 @@
             ],
             "format": "uuid"
           },
+          "seller": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Seller"
+              }
+            ]
+          },
           "availableStock": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
@@ -958,7 +988,27 @@
           }
         }
       },
-      "PaginatedItemsOfCatalogItem": {
+      "CatalogTypeDto": {
+        "required": [
+          "id",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "PaginatedItemsOfProductResponseDto": {
         "required": [
           "pageIndex",
           "pageSize",
@@ -994,7 +1044,7 @@
           "data": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CatalogItem"
+              "$ref": "#/components/schemas/ProductResponseDto"
             }
           }
         }
@@ -1034,6 +1084,153 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "ProductResponseDto": {
+        "required": [
+          "id",
+          "name",
+          "description",
+          "price",
+          "pictureFileName",
+          "catalogTypeId",
+          "catalogType",
+          "catalogBrandId",
+          "catalogBrand",
+          "availableStock",
+          "restockThreshold",
+          "maxStockThreshold",
+          "onReorder",
+          "sellerId",
+          "sellerName"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "price": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "pictureFileName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "catalogTypeId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "catalogType": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/CatalogTypeDto"
+              }
+            ]
+          },
+          "catalogBrandId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "catalogBrand": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/CatalogBrandDto"
+              }
+            ]
+          },
+          "availableStock": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "restockThreshold": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "maxStockThreshold": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "onReorder": {
+            "type": "boolean"
+          },
+          "sellerId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "sellerName": {
+            "type": "string"
+          }
+        }
+      },
+      "Seller": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "sellerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogItem"
+            }
           }
         }
       }
