@@ -21,7 +21,9 @@ export async function removeFirstCartItem(page: Page) {
 
 export async function emptyCart(page: Page) {
   await page.goto('/cart');
-  await expect(page.getByRole('heading', { name: 'Shopping bag', exact: true })).toBeVisible();
+  // Cart page header is in SectionContent or cart-summary-header
+  // Either wait for cart items to be loaded or empty state message
+  await expect(page.locator('.cart')).toBeVisible();
 
   const quantities = page.locator('[data-cart-quantity-input]');
   while (await quantities.count() > 0) {
