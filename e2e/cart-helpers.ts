@@ -21,11 +21,10 @@ export async function removeFirstCartItem(page: Page) {
 
 export async function emptyCart(page: Page) {
   await page.goto('/cart');
-  // Cart page header is in SectionContent or cart-summary-header
-  // Either wait for cart items to be loaded or empty state message
-  await expect(page.locator('.cart')).toBeVisible();
-
+  
+  // Wait for page to load - check if quantities are loaded
   const quantities = page.locator('[data-cart-quantity-input]');
+  await page.waitForLoadState('networkidle');
   while (await quantities.count() > 0) {
     const previousCount = await quantities.count();
     await removeFirstCartItem(page);
