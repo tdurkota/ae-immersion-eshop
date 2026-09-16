@@ -114,16 +114,14 @@ if ($inputLoc) { $location = $inputLoc }
 $inputApp = Read-Host "App/Service Principal Name [$appName]"
 if ($inputApp) { $appName = $inputApp }
 
-$inputAcr = Read-Host "ACR Registry Name [$acrName]"
-if ($inputAcr) { $acrName = $inputAcr }
-
 Write-Host ""
 Write-Info-Blue "Summary:"
 Write-Host "  Resource Group: $resourceGroupName"
 Write-Host "  Location: $location"
 Write-Host "  Service Principal: $appName"
-Write-Host "  ACR Registry: $acrName"
 Write-Host "  Subscription: $subscriptionId"
+Write-Host ""
+Write-Info-Blue "Note: Azure Container Registry (ACR) will be auto-provisioned by Aspire during deployment"
 Write-Host ""
 
 $continue = Read-Host "Continue? (y/n)"
@@ -197,38 +195,7 @@ Write-Host "  Tenant ID: $tenantId"
 Write-Host ""
 
 ################################################################################
-# STEP 6: Create Azure Container Registry (ACR)
-################################################################################
-
-Write-Warning-Yellow "Step 6: Setting up Azure Container Registry..."
-Write-Host ""
-
-$acrExists = az acr show --name $acrName --resource-group $resourceGroupName 2>$null
-if ($acrExists) {
-    Write-Warning-Yellow "⚠️  ACR '$acrName' already exists"
-} else {
-    Write-Host "Creating ACR registry..."
-    az acr create `
-        --resource-group $resourceGroupName `
-        --name $acrName `
-        --sku Standard `
-        --output none
-    Write-Success-Green "✅ ACR created"
-}
-
-# Get ACR login credentials
-$acrUsername = az acr credential show --name $acrName --resource-group $resourceGroupName --query username -o tsv
-$acrPassword = az acr credential show --name $acrName --resource-group $resourceGroupName --query "passwords[0].value" -o tsv
-$acrRegistryName = $acrName
-
-Write-Host ""
-Write-Info-Blue "ACR Details:"
-Write-Host "  Registry: $acrRegistryName.azurecr.io"
-Write-Host "  Username: $acrUsername"
-Write-Host ""
-
-################################################################################
-# STEP 7: Create .env.local
+# STEP 6: Create .env.local
 ################################################################################
 
 Write-Warning-Yellow "Step 7: Creating .env.local file..."
@@ -267,12 +234,9 @@ AZURE_RESOURCE_GROUP='$resourceGroupName'
 AZURE_LOCATION='$location'
 
 # ═══════════════════════════════════════════════════════════════
-# AZURE CONTAINER REGISTRY (ACR)
+# NOTE: Azure Container Registry (ACR) is auto-provisioned by Aspire
+# during deployment. No manual ACR setup is needed.
 # ═══════════════════════════════════════════════════════════════
-
-ACR_REGISTRY_NAME='$acrRegistryName'
-ACR_USERNAME='$acrUsername'
-ACR_PASSWORD='$acrPassword'
 
 # ═══════════════════════════════════════════════════════════════
 # AZURE FOUNDRY (CHATBOT AI) - COMMENTED FOR NOW
@@ -349,13 +313,10 @@ Set-GitHubSecret "AZURE_SUBSCRIPTION_ID" $subscriptionId
 Set-GitHubSecret "AZURE_RESOURCE_GROUP" $resourceGroupName
 Set-GitHubSecret "AZURE_LOCATION" $location
 
-# Set ACR secrets
-Set-GitHubSecret "ACR_REGISTRY_NAME" $acrRegistryName
-Set-GitHubSecret "ACR_USERNAME" $acrUsername
-Set-GitHubSecret "ACR_PASSWORD" $acrPassword
-
-# Set other required secrets
+# Set Aspire configuration
 Set-GitHubSecret "ASPIRE_MODULE_PATH" "src/eShop.AppHost/eShop.AppHost.csproj"
+
+# NOTE: ACR secrets are not needed - Aspire handles container registry provisioning
 
 Write-Host ""
 
@@ -388,7 +349,7 @@ Write-Warning-Yellow "Step 11: Verifying setup..."
 Write-Host ""
 
 Write-Info-Blue "Secrets configured in GitHub:"
-gh secret list --limit 30 | Select-String "AZURE_|ACR_|ASPIRE_" | ForEach-Object { Write-Host "  $_" }
+gh secret list --limit 30 | Select-String "AZURE_|ASPIRE_" | ForEach-Object { Write-Host "  $_" }
 
 Write-Host ""
 

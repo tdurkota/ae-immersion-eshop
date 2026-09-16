@@ -101,7 +101,8 @@ jobs:
       contents: read
     environment:
       name: staging
-      url: https://eshop-staging.azurecontainerapps.io
+    outputs:
+      staging-url: ${{ steps.get-staging-url.outputs.url }}
 
     steps:
       - name: Checkout code
@@ -130,6 +131,14 @@ jobs:
           ASPIRE_ALLOW_UNSECURED_TRANSPORT: "true"
         continue-on-error: false
 
+      - name: Get Staging URL
+        id: get-staging-url
+        run: |
+          # Get the webapp FQDN from deployed Container App
+          WEBAPP_URL=$(az containerapp show --name webapp --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --query properties.configuration.ingress.fqdn -o tsv)
+          echo "url=https://$WEBAPP_URL" >> $GITHUB_OUTPUT
+          echo "Staging URL: https://$WEBAPP_URL"
+
   # TODO: Enable E2E tests after initial deployment is working
   # e2e-tests:
   #   name: E2E Tests (Marketplace Flow)
@@ -140,21 +149,21 @@ jobs:
   #   steps:
   #     - name: Checkout code
   #       uses: actions/checkout@v4
-
+  #
   #     - name: Setup Node.js
   #       uses: actions/setup-node@v4
   #       with:
   #         node-version: '20'
   #         cache: 'npm'
-
+  #
   #     - name: Install Playwright dependencies
   #       run: npx playwright install --with-deps
-
+  #
   #     - name: Run E2E tests
   #       run: npm run test:e2e
   #       env:
-  #         STAGING_URL: https://eshop-staging.azurecontainerapps.io
-
+  #         STAGING_URL: ${{ needs.deploy-staging.outputs.staging-url }}
+  #
   #     - name: Upload E2E test results
   #       if: always()
   #       uses: actions/upload-artifact@v3
