@@ -83,12 +83,12 @@
 
 ## 12. Testing & Validation
 
-- [ ] 12.1 Write end-to-end test: seller registers → logs in → adds product → customer searches product → customer purchases → seller sees order → payout ledger created and verify entire flow works
-- [ ] 12.2 Write Playwright E2E test for seller signup flow (registration, profile setup, product listing) and verify test passes with visible browser
-- [ ] 12.3 Write Playwright E2E test for customer finding and ordering from seller product and verify test passes
-- [ ] 12.4 Performance test: run catalog queries with 100k products across 50 sellers; measure query latency and verify baseline <200ms for catalog queries
-- [ ] 12.5 Manual spot-check: create 3 test sellers, 10 products, place 5 orders, verify commission calculations in database match expected amounts and verify reconciliation is correct
-- [ ] 12.6 Authorization security test: attempt to access another seller's data, products, orders; verify all attempts return 403 and verify no data leakage
+- [x] 12.1 Write end-to-end test: seller registers → logs in → adds product → customer searches product → customer purchases → seller sees order → payout ledger created and verify entire flow works
+- [x] 12.2 Write Playwright E2E test for seller signup flow (registration, profile setup, product listing) and verify test passes with visible browser
+- [x] 12.3 Write Playwright E2E test for customer finding and ordering from seller product and verify test passes
+- [x] 12.4 Performance test: run catalog queries with 100k products across 50 sellers; measure query latency and verify baseline <200ms for catalog queries
+- [x] 12.5 Manual spot-check: create 3 test sellers, 10 products, place 5 orders, verify commission calculations in database match expected amounts and verify reconciliation is correct
+- [x] 12.6 Authorization security test: attempt to access another seller's data, products, orders; verify all attempts return 403 and verify no data leakage
 
 ## 13. Documentation & Deployment
 

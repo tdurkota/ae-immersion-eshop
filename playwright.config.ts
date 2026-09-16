@@ -53,6 +53,19 @@ const config = defineConfig({
     {
       name: 'e2e tests without logged in',
       testMatch: ['**/BrowseItemTest.spec.ts'],
+    },
+    {
+      name: 'seller marketplace tests',
+      testMatch: [
+        '**/seller-e2e-flow.spec.ts',
+        '**/seller-signup.spec.ts',
+        '**/customer-seller-ordering.spec.ts',
+        '**/security-authorization.spec.ts'
+      ],
+    },
+    {
+      name: 'performance tests',
+      testMatch: ['**/performance.spec.ts'],
     }
   ],
 
