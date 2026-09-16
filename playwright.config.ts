@@ -56,15 +56,15 @@ const config = defineConfig({
     }
   ],
 
-  /* Run your local dev server before starting the tests - only for default localhost URL */
-  ...(BASE_URL === 'http://localhost:5045' ? {
+  /* Run your local dev server before starting the tests - skip in CI */
+  ...(BASE_URL === 'http://localhost:5045' && !process.env.CI ? {
     webServer: {
       command: 'dotnet run --project src/eShop.AppHost/eShop.AppHost.csproj',
       url: 'http://localhost:5045',
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
       stderr: 'pipe',
       stdout: 'pipe',
-      timeout: process.env.CI ? (5 * 60_000) : 60_000,
+      timeout: 60_000,
     },
   } : {}),
 });
