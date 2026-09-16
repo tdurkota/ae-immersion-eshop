@@ -112,6 +112,18 @@
                 });
             }
 
+            // Add seller role and seller_id claim if user is a seller
+            if (user.SellerId.HasValue)
+            {
+                claims.Add(new Claim("role", UserRoles.Seller));
+                claims.Add(new Claim("seller_id", user.SellerId.Value.ToString()));
+            }
+            else
+            {
+                // Default role for non-seller users
+                claims.Add(new Claim("role", UserRoles.Customer));
+            }
+
             return claims;
         }
     }
