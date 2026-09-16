@@ -6,6 +6,10 @@ public record Orderitem
     public int Units { get; init; }
     public double UnitPrice { get; init; }
     public string PictureUrl { get; init; }
+    public int SellerId { get; init; }
+    public decimal CommissionRate { get; init; }
+    public decimal CommissionAmount { get; init; }
+    public decimal SellerAmount { get; init; }
 }
 
 public record Order

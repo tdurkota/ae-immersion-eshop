@@ -68,9 +68,9 @@ public class Order
     // This Order AggregateRoot's method "AddOrderItem()" should be the only way to add Items to the Order,
     // so any behavior (discounts, etc.) and validations are controlled by the AggregateRoot 
     // in order to maintain consistency between the whole Aggregate. 
-    public void AddOrderItem(int productId, string productName, decimal unitPrice, decimal discount, string pictureUrl, int units = 1)
+    public void AddOrderItem(int productId, string productName, decimal unitPrice, decimal discount, string pictureUrl, int units = 1, int sellerId = 0, decimal commissionRate = 0)
     {
-        var existingOrderForProduct = _orderItems.SingleOrDefault(o => o.ProductId == productId);
+        var existingOrderForProduct = _orderItems.SingleOrDefault(o => o.ProductId == productId && o.SellerId == sellerId);
 
         if (existingOrderForProduct != null)
         {
@@ -85,7 +85,7 @@ public class Order
         else
         {
             //add validated new order item
-            var orderItem = new OrderItem(productId, productName, unitPrice, discount, pictureUrl, units);
+            var orderItem = new OrderItem(productId, productName, unitPrice, discount, pictureUrl, units, sellerId, commissionRate);
             _orderItems.Add(orderItem);
         }
     }

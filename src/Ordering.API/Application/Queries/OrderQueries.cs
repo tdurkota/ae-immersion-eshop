@@ -1,5 +1,7 @@
 ﻿namespace eShop.Ordering.API.Application.Queries;
 
+using eShop.Ordering.API.Application.Services;
+
 public class OrderQueries(OrderingContext context)
     : IOrderQueries
 {
@@ -11,6 +13,8 @@ public class OrderQueries(OrderingContext context)
       
         if (order is null)
             throw new KeyNotFoundException();
+
+        var commissionService = new CommissionService();
 
         return new Order
         {
@@ -29,7 +33,11 @@ public class OrderQueries(OrderingContext context)
                 ProductName = oi.ProductName,
                 Units = oi.Units,
                 UnitPrice = (double)oi.UnitPrice,
-                PictureUrl = oi.PictureUrl
+                PictureUrl = oi.PictureUrl,
+                SellerId = oi.SellerId,
+                CommissionRate = oi.CommissionRate,
+                CommissionAmount = commissionService.CalculateCommission(oi.UnitPrice * oi.Units - oi.Discount, oi.CommissionRate),
+                SellerAmount = commissionService.CalculateSellerAmount(oi.UnitPrice * oi.Units - oi.Discount, oi.CommissionRate)
             }).ToList()
         };
     }

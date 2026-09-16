@@ -18,9 +18,13 @@ public class OrderItem
 
     public int ProductId { get; private set; }
 
+    public int SellerId { get; private set; }
+
+    public decimal CommissionRate { get; private set; }
+
     protected OrderItem() { }
 
-    public OrderItem(int productId, string productName, decimal unitPrice, decimal discount, string pictureUrl, int units = 1)
+    public OrderItem(int productId, string productName, decimal unitPrice, decimal discount, string pictureUrl, int units = 1, int sellerId = 0, decimal commissionRate = 0)
     {
         if (units <= 0)
         {
@@ -32,13 +36,24 @@ public class OrderItem
             throw new OrderingDomainException("The total of order item is lower than applied discount");
         }
 
-        ProductId = productId;
+        if (sellerId <= 0)
+        {
+            throw new OrderingDomainException("Invalid seller ID");
+        }
 
+        if (commissionRate < 0 || commissionRate > 1)
+        {
+            throw new OrderingDomainException("Commission rate must be between 0 and 1");
+        }
+
+        ProductId = productId;
         ProductName = productName;
         UnitPrice = unitPrice;
         Discount = discount;
         Units = units;
         PictureUrl = pictureUrl;
+        SellerId = sellerId;
+        CommissionRate = commissionRate;
     }
     
     public void SetNewDiscount(decimal discount)
