@@ -132,7 +132,8 @@ public static class CatalogApi
         [AsParameters] CatalogServices services,
         [Description("The name of the item to return")] string? name,
         [Description("The types of items to return. Repeat the parameter to filter by multiple types.")] int[]? type,
-        [Description("The brands of items to return. Repeat the parameter to filter by multiple brands.")] int[]? brand)
+        [Description("The brands of items to return. Repeat the parameter to filter by multiple brands.")] int[]? brand,
+        [Description("Filter items by seller ID (GUID)")] Guid? sellerId = null)
     {
         var pageSize = paginationRequest.PageSize;
         var pageIndex = paginationRequest.PageIndex;
@@ -150,6 +151,10 @@ public static class CatalogApi
         if (brand is { Length: > 0 })
         {
             root = root.Where(c => brand.Contains(c.CatalogBrandId));
+        }
+        if (sellerId is not null)
+        {
+            root = root.Where(c => c.SellerId == sellerId);
         }
 
         var totalItems = await root

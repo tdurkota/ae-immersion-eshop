@@ -619,6 +619,15 @@
             }
           },
           {
+            "name": "sellerId",
+            "in": "query",
+            "description": "Filter items by seller ID (GUID)",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
             "name": "api-version",
             "in": "query",
             "description": "The API version, in the format 'major.minor'.",
