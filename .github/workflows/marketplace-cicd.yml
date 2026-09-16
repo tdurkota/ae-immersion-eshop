@@ -30,6 +30,9 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Clean build artifacts
+        run: dotnet clean eShop.Web.slnf --configuration Release || true
+
       - name: Restore dependencies
         run: dotnet restore eShop.Web.slnf
 
@@ -112,6 +115,14 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Clean build artifacts
+        run: dotnet clean eShop.Web.slnf --configuration Release || true
 
       - name: Install Aspire CLI
         run: dotnet tool install -g Aspire.Cli --version '${{ env.ASPIRE_CLI_VERSION }}'
