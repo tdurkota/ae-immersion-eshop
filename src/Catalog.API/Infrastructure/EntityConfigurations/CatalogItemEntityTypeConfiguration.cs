@@ -13,6 +13,9 @@ class CatalogItemEntityTypeConfiguration
         builder.Property(ci => ci.Embedding)
             .HasColumnType("vector(384)");
 
+        builder.Property(ci => ci.SellerId)
+            .HasColumnName("seller_id");
+
         builder.HasOne(ci => ci.CatalogBrand)
             .WithMany();
 
@@ -20,5 +23,6 @@ class CatalogItemEntityTypeConfiguration
             .WithMany();
 
         builder.HasIndex(ci => ci.Name);
+        builder.HasIndex(ci => ci.SellerId);
     }
 }
