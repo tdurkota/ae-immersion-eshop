@@ -1,11 +1,18 @@
 namespace eShop.Sellers.API.Controllers;
 
+using eShop.Sellers.API.Infrastructure;
+using eShop.Sellers.API.Responses;
+
 [ApiController]
 [Route("api/sellers")]
-public class SellersController(SellersContext context, ILogger<SellersController> logger) : ControllerBase
+public class SellersController(
+    SellersContext context, 
+    ILogger<SellersController> logger,
+    ISellerPayoutRepository payoutRepository) : ControllerBase
 {
     private readonly SellersContext _context = context;
     private readonly ILogger<SellersController> _logger = logger;
+    private readonly ISellerPayoutRepository _payoutRepository = payoutRepository;
 
     /// <summary>
     /// Register a new seller
@@ -150,6 +157,179 @@ public class SellersController(SellersContext context, ILogger<SellersController
         _logger.LogInformation("Seller {SellerId} profile updated", id);
 
         return Ok(MapToResponse(seller, isOwner: true));
+    }
+
+    /// <summary>
+    /// Get seller's orders
+    /// </summary>
+    /// <remarks>
+    /// Task 10.1: GET endpoint for seller to view their orders
+    /// - Returns orders containing seller's items
+    /// - Requires seller authentication
+    /// - Supports pagination
+    /// </remarks>
+    [HttpGet("{id:guid}/orders")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<object>> GetSellerOrders(
+        Guid id,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        // Verify seller exists and user is authorized
+        var seller = await _context.Sellers.FindAsync(new object[] { id }, cancellationToken: cancellationToken);
+        
+        if (seller == null)
+            return NotFound(new { error = "Seller not found" });
+
+        if (!IsSellerOwner(id))
+            return Forbid("You can only view your own orders");
+
+        // Get all payouts for this seller
+        var payouts = await _payoutRepository.GetPayoutsBySellerAsync(id, cancellationToken);
+
+        // Group by order ID to get distinct orders
+        var orderGroups = payouts
+            .GroupBy(p => p.OrderId)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        var orders = orderGroups.Select(group => new SellerOrderResponse(
+            OrderId: group.Key,
+            Status: "Completed",
+            OrderDate: group.Min(p => p.CreatedAt),
+            TotalAmount: group.Sum(p => p.GrossAmount),
+            Items: group.Select(p => new OrderItemDetail(
+                OrderLineItemId: p.OrderLineItemId,
+                UnitPrice: p.GrossAmount,
+                Quantity: 1,
+                ItemTotal: p.GrossAmount,
+                SellerAmount: p.SellerAmount,
+                PayoutStatus: p.Status.ToString()
+            )).ToList()
+        )).ToList();
+
+        return Ok(new
+        {
+            orders,
+            total = payouts.GroupBy(p => p.OrderId).Count(),
+            page,
+            pageSize
+        });
+    }
+
+    /// <summary>
+    /// Get seller's payouts
+    /// </summary>
+    /// <remarks>
+    /// Task 10.2: GET endpoint for seller to view payout ledger
+    /// - Filters by status (Pending, Processed, Paid)
+    /// - Filters by date range
+    /// - Returns paginated results
+    /// - Requires seller authentication
+    /// </remarks>
+    [HttpGet("{id:guid}/payouts")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<object>> GetSellerPayouts(
+        Guid id,
+        [FromQuery] string? status = null,
+        [FromQuery] DateTime? dateFrom = null,
+        [FromQuery] DateTime? dateTo = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        // Verify seller exists and user is authorized
+        var seller = await _context.Sellers.FindAsync(new object[] { id }, cancellationToken: cancellationToken);
+        
+        if (seller == null)
+            return NotFound(new { error = "Seller not found" });
+
+        if (!IsSellerOwner(id))
+            return Forbid("You can only view your own payouts");
+
+        // Parse status filter if provided
+        SellerPayoutStatus? statusFilter = null;
+        if (!string.IsNullOrEmpty(status))
+        {
+            if (Enum.TryParse<SellerPayoutStatus>(status, ignoreCase: true, out var parsedStatus))
+            {
+                statusFilter = parsedStatus;
+            }
+        }
+
+        // Get filtered payouts
+        var payouts = await _payoutRepository.GetPayoutsBySellerWithFiltersAsync(
+            id, statusFilter, dateFrom, dateTo, cancellationToken);
+
+        // Apply pagination
+        var totalCount = payouts.Count;
+        var paginatedPayouts = payouts
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        var responses = paginatedPayouts.Select(p => new SellerPayoutResponse(
+            PayoutId: p.PayoutId,
+            OrderId: p.OrderId,
+            OrderLineItemId: p.OrderLineItemId,
+            GrossAmount: p.GrossAmount,
+            CommissionAmount: p.CommissionAmount,
+            SellerAmount: p.SellerAmount,
+            Status: p.Status.ToString(),
+            CreatedAt: p.CreatedAt,
+            ProcessedAt: p.PaidAt
+        )).ToList();
+
+        return Ok(new
+        {
+            payouts = responses,
+            total = totalCount,
+            page,
+            pageSize
+        });
+    }
+
+    /// <summary>
+    /// Get seller's payout summary
+    /// </summary>
+    /// <remarks>
+    /// Task 10.3: GET endpoint for seller to view payout summary
+    /// - Calculates totals by status
+    /// - Returns total_earned, total_pending, total_processed, total_paid
+    /// - Requires seller authentication
+    /// </remarks>
+    [HttpGet("{id:guid}/payouts/summary")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<SellerPayoutSummaryResponse>> GetSellerPayoutSummary(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        // Verify seller exists and user is authorized
+        var seller = await _context.Sellers.FindAsync(new object[] { id }, cancellationToken: cancellationToken);
+        
+        if (seller == null)
+            return NotFound(new { error = "Seller not found" });
+
+        if (!IsSellerOwner(id))
+            return Forbid("You can only view your own payout summary");
+
+        // Get payout summary
+        var summary = await _payoutRepository.GetPayoutSummaryAsync(id, cancellationToken);
+
+        return Ok(new SellerPayoutSummaryResponse(
+            TotalEarned: summary.TotalEarned,
+            TotalPending: summary.TotalPending,
+            TotalProcessed: summary.TotalProcessed,
+            TotalPaid: summary.TotalPaid
+        ));
     }
 
     private bool IsSellerOwner(Guid sellerId)
