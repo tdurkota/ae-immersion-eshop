@@ -23,10 +23,10 @@
 
 ## 4. Sellers.API: CRUD Operations
 
-- [ ] 4.1 Implement POST /api/sellers (seller registration) endpoint with validation (required fields, email format, unique email) and verify endpoint creates seller and returns 201 Created
-- [ ] 4.2 Implement GET /api/sellers/{id} (seller profile) endpoint with authorization check (only owner can view private fields) and verify owner sees full profile, non-owner gets 403
-- [ ] 4.3 Implement PUT /api/sellers/{id} (update profile) endpoint with authorization and verify seller can update their own profile, others get 403
-- [ ] 4.4 Create unit tests for seller CRUD endpoints (success, validation failures, authorization failures) and verify all tests pass with >90% code coverage
+- [x] 4.1 Implement POST /api/sellers (seller registration) endpoint with validation (required fields, email format, unique email) and verify endpoint creates seller and returns 201 Created
+- [x] 4.2 Implement GET /api/sellers/{id} (seller profile) endpoint with authorization check (only owner can view private fields) and verify owner sees full profile, non-owner gets 403
+- [x] 4.3 Implement PUT /api/sellers/{id} (update profile) endpoint with authorization and verify seller can update their own profile, others get 403
+- [x] 4.4 Create unit tests for seller CRUD endpoints (success, validation failures, authorization failures) and verify all tests pass with >90% code coverage
 
 ## 5. Catalog.API: Seller Product Management
 
