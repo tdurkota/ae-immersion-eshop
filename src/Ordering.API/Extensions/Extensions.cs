@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using eShop.Ordering.Application.Services;
 
 internal static class Extensions
 {
@@ -48,6 +49,7 @@ internal static class Extensions
         services.AddScoped<IBuyerRepository, BuyerRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IRequestManager, RequestManager>();
+        services.AddScoped<CommissionService>();
     }
 
     private static void AddEventBusSubscriptions(this IEventBusBuilder eventBus)

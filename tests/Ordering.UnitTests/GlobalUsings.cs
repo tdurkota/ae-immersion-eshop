@@ -7,7 +7,11 @@ global using MediatR;
 global using Microsoft.AspNetCore.Mvc;
 global using eShop.Ordering.API.Application.Commands;
 global using eShop.Ordering.API.Application.Models;
+global using eShop.Ordering.API.Application.IntegrationEvents.Events;
+global using eShop.Ordering.API.Application.Services;
 global using eShop.Ordering.API.Infrastructure.Services;
+global using eShop.Ordering.Application.Services;
+global using eShop.Ordering.Domain.AggregatesModel.OrderAggregate;
 global using eShop.Ordering.Domain.AggregatesModel.BuyerAggregate;
 global using eShop.Ordering.Domain.Events;
 global using eShop.Ordering.Domain.Exceptions;
@@ -17,5 +21,6 @@ global using Microsoft.Extensions.Logging;
 global using NSubstitute;
 global using eShop.Ordering.UnitTests;
 global using Microsoft.VisualStudio.TestTools.UnitTesting;
+global using Moq;
 
 [assembly: Parallelize(Workers = 0, Scope = ExecutionScope.MethodLevel)]

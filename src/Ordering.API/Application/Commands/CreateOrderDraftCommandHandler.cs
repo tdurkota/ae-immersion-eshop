@@ -36,7 +36,9 @@ public record OrderDraftDTO
                 UnitPrice = oi.UnitPrice,
                 PictureUrl = oi.PictureUrl,
                 Units = oi.Units,
-                ProductName = oi.ProductName
+                ProductName = oi.ProductName,
+                SellerId = oi.SellerId,
+                CommissionRate = oi.CommissionRate
             }),
             Total = order.GetTotal()
         };
@@ -56,4 +58,8 @@ public record OrderItemDTO
     public int Units { get; init; }
 
     public string PictureUrl { get; init; }
+
+    public int SellerId { get; init; }
+
+    public decimal CommissionRate { get; init; }
 }
