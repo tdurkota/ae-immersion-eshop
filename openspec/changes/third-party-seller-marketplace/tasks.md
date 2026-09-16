@@ -69,10 +69,10 @@
 
 ## 10. Sellers.API: Seller-Specific Order & Payout Visibility
 
-- [x] 10.1 Implement GET /api/sellers/{id}/orders (seller views their orders) endpoint with authorization and verify seller sees only orders with their items
-- [x] 10.2 Implement GET /api/sellers/{id}/payouts (seller views payout ledger) endpoint with filtering by status and date range and verify seller sees correct payout entries
-- [x] 10.3 Implement GET /api/sellers/{id}/payouts/summary (seller payout summary) endpoint and verify summary calculates totals (pending, processed, paid) correctly
-- [x] 10.4 Create unit tests for seller order/payout endpoints (authorization, data isolation, filtering) and verify all tests pass
+- [ ] 10.1 Implement GET /api/sellers/{id}/orders (seller views their orders) endpoint with authorization and verify seller sees only orders with their items
+- [ ] 10.2 Implement GET /api/sellers/{id}/payouts (seller views payout ledger) endpoint with filtering by status and date range and verify seller sees correct payout entries
+- [ ] 10.3 Implement GET /api/sellers/{id}/payouts/summary (seller payout summary) endpoint and verify summary calculates totals (pending, processed, paid) correctly
+- [ ] 10.4 Create unit tests for seller order/payout endpoints (authorization, data isolation, filtering) and verify all tests pass
 
 ## 11. UI: Seller Attribution and Filtering
 

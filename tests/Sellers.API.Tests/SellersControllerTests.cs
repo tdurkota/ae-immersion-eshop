@@ -953,13 +953,12 @@ public class SellersControllerTests
         // Assert
         var okResult = Assert.IsInstanceOfType<OkObjectResult>(result.Result);
         var json = JsonSerializer.Serialize(okResult.Value);
-        using var doc = JsonDocument.Parse(json);
-        var root = doc.RootElement;
+        var returnValue = JsonDocument.Parse(json);
         
-        Assert.AreEqual(255m, root.GetProperty("totalEarned").GetDecimal());     // 85 + 85 + 85
-        Assert.AreEqual(85m, root.GetProperty("totalPending").GetDecimal());     // 85
-        Assert.AreEqual(85m, root.GetProperty("totalProcessed").GetDecimal());   // 85
-        Assert.AreEqual(85m, root.GetProperty("totalPaid").GetDecimal());        // 85
+        Assert.AreEqual(255m, (decimal)returnValue["totalEarned"]);     // 85 + 85 + 85
+        Assert.AreEqual(85m, (decimal)returnValue["totalPending"]);     // 85
+        Assert.AreEqual(85m, (decimal)returnValue["totalProcessed"]);   // 85
+        Assert.AreEqual(85m, (decimal)returnValue["totalPaid"]);        // 85
     }
 
     [TestMethod]
