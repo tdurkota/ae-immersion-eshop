@@ -894,6 +894,23 @@
               }
             ]
           },
+          "sellerId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "seller": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Seller"
+              }
+            ]
+          },
           "availableStock": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
@@ -920,6 +937,15 @@
           },
           "onReorder": {
             "type": "boolean"
+          },
+          "oldPrice": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
           }
         }
       },
@@ -1020,6 +1046,77 @@
             ]
           }
         }
+      },
+      "Seller": {
+        "required": [
+          "name",
+          "email",
+          "bankAccountInfo",
+          "status",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object",
+        "properties": {
+          "sellerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "email": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 1000,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "phoneNumber": {
+            "maxLength": 20,
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "bankAccountInfo": {
+            "maxLength": 500,
+            "type": "string"
+          },
+          "commissionRate": {
+            "maximum": 1,
+            "minimum": 0,
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SellerStatus"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SellerStatus": {
+        "enum": [
+          "Active",
+          "Suspended",
+          "Inactive"
+        ]
       }
     }
   },

@@ -25,6 +25,10 @@ public class CatalogItem
 
     public CatalogBrand? CatalogBrand { get; set; }
 
+    public Guid? SellerId { get; set; }
+
+    public eShop.Catalog.API.Model.Seller.Seller? Seller { get; set; }
+
     // Quantity in stock
     public int AvailableStock { get; set; }
 
@@ -48,32 +52,36 @@ public class CatalogItem
 
 
     /// <summary>
-    /// Decrements the quantity of a particular item in inventory and ensures the restockThreshold hasn't
-    /// been breached. If so, a RestockRequest is generated in CheckThreshold. 
-    /// 
-    /// If there is sufficient stock of an item, then the integer returned at the end of this call should be the same as quantityDesired. 
-    /// In the event that there is not sufficient stock available, the method will remove whatever stock is available and return that quantity to the client.
-    /// In this case, it is the responsibility of the client to determine if the amount that is returned is the same as quantityDesired.
-    /// It is invalid to pass in a negative number. 
+    /// Old price
     /// </summary>
-    /// <param name="quantityDesired"></param>
-    /// <returns>int: Returns the number actually removed from stock. </returns>
-    /// 
-    public int RemoveStock(int quantityDesired)
+    public decimal? OldPrice { get; set; }
+
+    public void SetOldPrice(decimal? _oldPrice) => OldPrice = _oldPrice;
+
+    /// <summary>
+    /// Decrements the quantity of a particular item in inventory.
+    /// <param name="quantity"></param>
+    /// <returns>int: Returns the quantity that has been decremented.</returns>
+    /// </summary>
+    public int RemoveStock(int quantity)
     {
-        if (AvailableStock == 0)
+        if (this.AvailableStock == 0)
         {
-            throw new CatalogDomainException($"Empty stock, product item {Name} is sold out");
+            throw new InvalidOperationException($"Empty stock.");
         }
 
-        if (quantityDesired <= 0)
+        int removed = 0;
+
+        if (this.AvailableStock >= quantity)
         {
-            throw new CatalogDomainException($"Item units desired should be greater than zero");
+            this.AvailableStock -= quantity;
+            removed = quantity;
         }
-
-        int removed = Math.Min(quantityDesired, this.AvailableStock);
-
-        this.AvailableStock -= removed;
+        else
+        {
+            removed = this.AvailableStock;
+            this.AvailableStock = 0;
+        }
 
         return removed;
     }

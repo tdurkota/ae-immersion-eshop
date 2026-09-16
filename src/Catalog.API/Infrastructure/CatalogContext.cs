@@ -1,4 +1,4 @@
-﻿namespace eShop.Catalog.API.Infrastructure;
+namespace eShop.Catalog.API.Infrastructure;
 
 /// <remarks>
 /// Add migrations using the following command inside the 'Catalog.API' project directory:
@@ -14,6 +14,8 @@ public class CatalogContext : DbContext
     public required DbSet<CatalogItem> CatalogItems { get; set; }
     public required DbSet<CatalogBrand> CatalogBrands { get; set; }
     public required DbSet<CatalogType> CatalogTypes { get; set; }
+    public required DbSet<eShop.Catalog.API.Model.Seller.Seller> Sellers { get; set; }
+    public required DbSet<eShop.Catalog.API.Model.Seller.SellerPayout> SellerPayouts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -21,6 +23,8 @@ public class CatalogContext : DbContext
         builder.ApplyConfiguration(new CatalogBrandEntityTypeConfiguration());
         builder.ApplyConfiguration(new CatalogTypeEntityTypeConfiguration());
         builder.ApplyConfiguration(new CatalogItemEntityTypeConfiguration());
+        builder.ApplyConfiguration(new SellerEntityTypeConfiguration());
+        builder.ApplyConfiguration(new SellerPayoutEntityTypeConfiguration());
 
         // Add the outbox table to this context
         builder.UseIntegrationEventLogs();

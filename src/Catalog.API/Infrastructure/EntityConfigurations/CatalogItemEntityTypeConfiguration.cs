@@ -1,4 +1,4 @@
-﻿namespace eShop.Catalog.API.Infrastructure.EntityConfigurations;
+namespace eShop.Catalog.API.Infrastructure.EntityConfigurations;
 
 class CatalogItemEntityTypeConfiguration
     : IEntityTypeConfiguration<CatalogItem>
@@ -18,6 +18,11 @@ class CatalogItemEntityTypeConfiguration
 
         builder.HasOne(ci => ci.CatalogType)
             .WithMany();
+
+        builder.HasOne(ci => ci.Seller)
+            .WithMany()
+            .HasForeignKey(ci => ci.SellerId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasIndex(ci => ci.Name);
     }
