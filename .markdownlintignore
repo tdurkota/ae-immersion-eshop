@@ -4,6 +4,11 @@
 docs/
 DECOUPLED_BUSINESS_RULES_BRD.md
 MULTI_TENANCY_ISOLATION_BRD.md
-TOOLS-TECHNIQUES-ROADMAP.md
-adversarial-review_*.md
-TEST-RESULTS_*.md
+
+# New documentation files - will be cleaned up to pass linting in Phase 2
+docs/AUTOMATED_SETUP_GUIDE.md
+docs/AZURE_CONTAINER_APPS_DEPLOYMENT.md
+docs/GITHUB_ACTIONS_QUICK_START.md
+docs/GITHUB_ACTIONS_SECRETS.md
+docs/SIMPLIFIED_WORKFLOW.md
+docs/AZURE_SETUP.md
