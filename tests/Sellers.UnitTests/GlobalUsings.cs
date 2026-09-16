@@ -1,0 +1,11 @@
+global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Threading.Tasks;
+global using Microsoft.VisualStudio.TestTools.UnitTesting;
+global using Microsoft.Extensions.Logging;
+global using NSubstitute;
+global using Microsoft.EntityFrameworkCore;
+global using eShop.Sellers.API.Model;
+global using eShop.Sellers.API.Infrastructure;
+global using eShop.Sellers.API.Infrastructure.Repositories;
