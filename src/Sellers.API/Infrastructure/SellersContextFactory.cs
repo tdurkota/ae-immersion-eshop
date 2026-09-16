@@ -5,7 +5,7 @@ internal sealed class SellersContextFactory : IDesignTimeDbContextFactory<Seller
     public SellersContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<SellersContext>();
-        optionsBuilder.UseNpgsql("Host=localhost;Database=eshop;Username=postgres;Password=postgres");
+        optionsBuilder.UseNpgsql("Host=localhost;Database=sellers;Username=postgres;Password=postgres");
 
         return new SellersContext(optionsBuilder.Options);
     }
