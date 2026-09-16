@@ -76,10 +76,10 @@
 
 ## 11. UI: Seller Attribution and Filtering
 
-- [ ] 11.1 Update product card component to display seller name or "Official Store" for platform products and verify seller info displays in product listings
-- [ ] 11.2 Add seller filter to product catalog (dropdown/list of sellers) and verify customers can filter by seller
-- [ ] 11.3 Create seller profile/storefront page showing all products from a seller and verify page displays seller info and products
-- [ ] 11.4 Update product detail page to show seller information and link to seller's other products and verify page renders correctly
+- [x] 11.1 Update product card component to display seller name or "Official Store" for platform products and verify seller info displays in product listings
+- [x] 11.2 Add seller filter to product catalog (dropdown/list of sellers) and verify customers can filter by seller
+- [x] 11.3 Create seller profile/storefront page showing all products from a seller and verify page displays seller info and products
+- [x] 11.4 Update product detail page to show seller information and link to seller's other products and verify page renders correctly
 
 ## 12. Testing & Validation
 

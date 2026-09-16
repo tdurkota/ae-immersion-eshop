@@ -1,7 +1,7 @@
 @inject CatalogService CatalogService
 @inject NavigationManager Nav
 
-@if (catalogBrands is not null && catalogItemTypes is not null)
+@if (catalogBrands is not null && catalogItemTypes is not null && catalogSellers is not null)
 {
     <aside class="catalog-search">
         <details class="catalog-search-details" open>
@@ -71,6 +71,33 @@
                         }
                     </div>
                 </div>
+                <div class="catalog-search-group">
+                    <h3>Seller</h3>
+                    <div class="catalog-search-group-tags">
+                        <a href="@SellerUri(null)"
+                           class="catalog-search-tag @(SellerActiveCount == 0 ? "active" : "")">
+                            <span>All</span>
+                            <span class="catalog-search-tag-count">@SellerCount(null)</span>
+                        </a>
+                        <a href="@SellerUri(Guid.Empty)"
+                           class="catalog-search-tag @(IsSellerActive(Guid.Empty) ? "active" : "")">
+                            <span>Official Store</span>
+                            <span class="catalog-search-tag-count">@OfficialStoreCount</span>
+                        </a>
+                        @foreach (var seller in catalogSellers.Where(s => s.Id != Guid.Empty))
+                        {
+                            var count = SellerCount(seller.Id);
+                            var isActive = IsSellerActive(seller.Id);
+                            var isEmpty = count == 0 && !isActive;
+                            <a href="@SellerUri(seller.Id)"
+                               class="catalog-search-tag @(isActive ? "active" : "") @(isEmpty ? "is-empty" : "")"
+                               aria-disabled="@(isEmpty ? "true" : null)">
+                                <span>@seller.Name</span>
+                                <span class="catalog-search-tag-count">@count</span>
+                            </a>
+                        }
+                    </div>
+                </div>
             </div>
         </details>
     </aside>
@@ -79,32 +106,40 @@
 @code {
     IEnumerable<CatalogBrand>? catalogBrands;
     IEnumerable<CatalogItemType>? catalogItemTypes;
+    IEnumerable<SellerFacet>? catalogSellers;
     CatalogFacets? facets;
 
     [Parameter] public int[]? BrandIds { get; set; }
     [Parameter] public int[]? TypeIds { get; set; }
+    [Parameter] public Guid[]? SellerIds { get; set; }
 
     private IReadOnlyList<int> Brands => BrandIds ?? [];
     private IReadOnlyList<int> Types => TypeIds ?? [];
+    private IReadOnlyList<Guid> Sellers => SellerIds ?? [];
 
     private int BrandActiveCount => Brands.Count;
     private int TypeActiveCount => Types.Count;
+    private int SellerActiveCount => Sellers.Count;
 
-    bool HasActiveFilter => Brands.Count > 0 || Types.Count > 0;
-    int ActiveFilterCount => Brands.Count + Types.Count;
+    bool HasActiveFilter => Brands.Count > 0 || Types.Count > 0 || Sellers.Count > 0;
+    int ActiveFilterCount => Brands.Count + Types.Count + Sellers.Count;
 
     private bool IsBrandActive(int id) => Brands.Contains(id);
     private bool IsTypeActive(int id) => Types.Contains(id);
+    private bool IsSellerActive(Guid id) => Sellers.Contains(id);
+
+    private int OfficialStoreCount => facets?.SellerCounts.FirstOrDefault(s => s.Id == Guid.Empty)?.Count ?? 0;
 
     protected override async Task OnInitializedAsync()
     {
         var brandsTask = CatalogService.GetBrands();
         var itemTypesTask = CatalogService.GetTypes();
-        var facetsTask = CatalogService.GetCatalogFacets(BrandIds, TypeIds);
+        var facetsTask = CatalogService.GetCatalogFacets(BrandIds, TypeIds, SellerIds);
         await Task.WhenAll(brandsTask, itemTypesTask, facetsTask);
         catalogBrands = brandsTask.Result;
         catalogItemTypes = itemTypesTask.Result;
         facets = facetsTask.Result;
+        catalogSellers = facets?.SellerCounts ?? [];
     }
 
     // Contextual counts. Within a facet, selections are additive (OR / union); across
@@ -152,6 +187,20 @@
         return 0;
     }
 
+    private int SellerCount(Guid? sellerId)
+    {
+        if (facets is null)
+        {
+            return 0;
+        }
+        if (sellerId is null)
+        {
+            return facets.SellerCounts.Sum(s => s.Count);
+        }
+        var seller = facets.SellerCounts.FirstOrDefault(s => s.Id == sellerId);
+        return seller?.Count ?? 0;
+    }
+
     private string BrandUri(int? brandId) => Nav.GetUriWithQueryParameters(new Dictionary<string, object?>()
     {
         { "page", null },
@@ -164,16 +213,20 @@
         { "type", ToggleValue(Types, typeId) },
     });
 
+    private string SellerUri(Guid? sellerId) => Nav.GetUriWithQueryParameters(new Dictionary<string, object?>()
+    {
+        { "page", null },
+        { "seller", ToggleSeller(Sellers, sellerId) },
+    });
+
     private string ResetUri() => Nav.GetUriWithQueryParameters(new Dictionary<string, object?>()
     {
         { "page", null },
         { "brand", null },
         { "type", null },
+        { "seller", null },
     });
 
-    // A null id clears the facet ("All"). Otherwise toggle the id's membership in the
-    // current set and return an array (emitted as repeated query params) or null when the
-    // set becomes empty.
     private static int[]? ToggleValue(IReadOnlyList<int> current, int? id)
     {
         if (id is null)
@@ -182,6 +235,20 @@
         }
 
         int[] next = current.Contains(id.Value)
+            ? current.Where(v => v != id.Value).ToArray()
+            : [.. current, id.Value];
+
+        return next.Length == 0 ? null : next;
+    }
+
+    private static Guid[]? ToggleSeller(IReadOnlyList<Guid> current, Guid? id)
+    {
+        if (id is null)
+        {
+            return null;
+        }
+
+        Guid[] next = current.Contains(id.Value)
             ? current.Where(v => v != id.Value).ToArray()
             : [.. current, id.Value];
 

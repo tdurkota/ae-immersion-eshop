@@ -83,8 +83,8 @@
 
 .catalog-product-content {
     display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
+    flex-direction: column;
+    gap: 0.5rem;
     padding: 0.9rem 1rem 1.1rem;
 }
 
@@ -97,11 +97,26 @@
 }
 
 .catalog-product-content .price {
-    margin-left: auto;
     color: var(--color-ink);
     font-size: var(--text-base);
     font-weight: 700;
     white-space: nowrap;
+}
+
+.catalog-product-content .seller {
+    display: flex;
+    align-items: center;
+}
+
+.catalog-product-content .seller-name {
+    font-size: 0.85rem;
+    color: var(--color-ink-2, #666);
+    font-weight: 500;
+}
+
+.catalog-product-content .seller-name.official-store {
+    color: var(--color-primary, #0066cc);
+    font-weight: 600;
 }
 
 /* Scroll-reveal on the wrapper (kept off .catalog-product so hover-lift stays free).

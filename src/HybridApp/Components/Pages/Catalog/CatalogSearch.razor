@@ -1,7 +1,7 @@
 ﻿@inject eShop.HybridApp.Services.CatalogService CatalogService
 @inject NavigationManager Nav
 
-@if (catalogBrands is not null && catalogItemTypes is not null)
+@if (catalogBrands is not null && catalogItemTypes is not null && catalogSellers is not null)
 {
     <div class="catalog-search">
         <div class="catalog-search-header">
@@ -42,6 +42,26 @@
                     }
                 </div>
             </div>
+            <div class="catalog-search-group">
+                <h3>Seller</h3>
+                <div class="catalog-search-group-tags">
+                    <a href="@SellerUri(null)"
+                    class="catalog-search-tag @(SellerId == null ? "active " : "")">
+                        All
+                    </a>
+                    <a href="@SellerUri(Guid.Empty)"
+                    class="catalog-search-tag @(SellerId == Guid.Empty ? "active " : "")">
+                        Official Store
+                    </a>
+                    @foreach (var seller in catalogSellers.Where(s => s.Id != Guid.Empty))
+                    {
+                        <a href="@SellerUri(seller.Id)"
+                        class="catalog-search-tag @(SellerId == seller.Id ? "active " : "")">
+                            @seller.Name
+                        </a>
+                    }
+                </div>
+            </div>
         </div>
     </div>
 }
@@ -49,27 +69,44 @@
 @code {
     IEnumerable<CatalogBrand>? catalogBrands;
     IEnumerable<CatalogItemType>? catalogItemTypes;
+    IEnumerable<SellerFacet>? catalogSellers;
+    CatalogFacets? facets;
+
     [Parameter] public int? BrandId { get; set; }
     [Parameter] public int? ItemTypeId { get; set; }
+    [Parameter] public Guid? SellerId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         var brandsTask = CatalogService.GetBrands();
         var itemTypesTask = CatalogService.GetTypes();
-        await Task.WhenAll(brandsTask, itemTypesTask);
+        var facetsTask = CatalogService.GetCatalogFacets(null, null, null);
+        await Task.WhenAll(brandsTask, itemTypesTask, facetsTask);
         catalogBrands = brandsTask.Result;
         catalogItemTypes = itemTypesTask.Result;
+        facets = facetsTask.Result;
+        catalogSellers = facets?.SellerCounts ?? [];
     }
 
     private string BrandUri(int? brandId) => Nav.GetUriWithQueryParameters(new Dictionary<string, object?>()
     {
         { "page", null },
         { "brand", brandId },
+        { "seller", SellerId },
     });
 
     private string TypeUri(int? typeId) => Nav.GetUriWithQueryParameters(new Dictionary<string, object?>()
     {
         { "page", null },
         { "type", typeId },
+        { "seller", SellerId },
+    });
+
+    private string SellerUri(Guid? sellerId) => Nav.GetUriWithQueryParameters(new Dictionary<string, object?>()
+    {
+        { "page", null },
+        { "seller", sellerId },
+        { "brand", BrandId },
+        { "type", ItemTypeId },
     });
 }

@@ -18,6 +18,18 @@
             <p>
                 Brand: <strong>@item.CatalogBrand?.Brand</strong>
             </p>
+            <p class="seller-info">
+                Sold by: 
+                @if (item.SellerId.HasValue)
+                {
+                    <a href="@GetSellerStorefrontUrl()"><strong>@item.SellerName</strong></a>
+                    <a href="@GetSellerStorefrontUrl()" class="seller-products-link">(View all products)</a>
+                }
+                else
+                {
+                    <strong class="official-store">Official Store</strong>
+                }
+            </p>
             <form class="add-to-cart" >
                 <span class="price">$@item.Price.ToPriceDisplay()</span>
             </form>
@@ -62,6 +74,15 @@ else if (notFound)
             // HttpContext!.Response.StatusCode = 404;
             notFound = true;
         }
+    }
+
+    private string GetSellerStorefrontUrl()
+    {
+        if (item?.SellerId.HasValue == true)
+        {
+            return $"/sellers/{item.SellerId}";
+        }
+        return "/";
     }
 
     // private async Task AddToCartAsync()

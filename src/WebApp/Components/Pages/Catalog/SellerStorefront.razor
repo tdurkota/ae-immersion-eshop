@@ -1,0 +1,142 @@
+@page "/sellers/{sellerIdString}"
+@inject NavigationManager Nav
+@inject CatalogService CatalogService
+@attribute [StreamRendering]
+
+<PageTitle>@SellerName - Store</PageTitle>
+
+<div class="catalog">
+    @if (catalogResult is null)
+    {
+        <div class="catalog-results" role="status" aria-label="Loading seller products">
+            <div class="catalog-toolbar">
+                <span class="catalog-count-skeleton" aria-hidden="true"></span>
+            </div>
+            <div class="catalog-items">
+                @for (var i = 0; i < PageSize; i++)
+                {
+                    <div class="catalog-card-skeleton" aria-hidden="true">
+                        <div class="skeleton-media"></div>
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line short"></div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else if (catalogResult.Count == 0)
+    {
+        <div class="catalog-results">
+            <div class="catalog-empty">
+                <span class="catalog-empty-icon" aria-hidden="true">
+                    <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="21" cy="21" r="13" />
+                        <path d="m38 38-7.6-7.6" />
+                    </svg>
+                </span>
+                <h2>@(SellerName) has no products yet</h2>
+                <p>Check back later or browse other sellers.</p>
+                <a class="button button-primary" href="/">Back to all products</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="catalog-results">
+            <div class="seller-header">
+                <h1>@SellerName</h1>
+                <p class="seller-subtitle">@catalogResult.Count product@(catalogResult.Count != 1 ? "s" : "") available</p>
+            </div>
+
+            <div class="catalog-toolbar">
+                <p class="catalog-count">@catalogResult.Count @(catalogResult.Count == 1 ? "product" : "products")</p>
+            </div>
+
+            <div class="catalog-items">
+                @foreach (var item in catalogResult.Data)
+                {
+                    <CatalogListItem Item="@item" IsLoggedIn="@IsLoggedIn" />
+                }
+            </div>
+
+            @if (catalogResult.Count > PageSize)
+            {
+                <div class="page-links">
+                    @foreach (var pageIndex in GetVisiblePageIndexes(catalogResult))
+                    {
+                        <NavLink ActiveClass="active-page" Match="@NavLinkMatch.All"
+                                 href="@GetPageUri(pageIndex)">@pageIndex</NavLink>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    const int PageSize = 9;
+
+    [Parameter]
+    public string? SellerIdString { get; set; }
+
+    [SupplyParameterFromQuery]
+    public int? Page { get; set; }
+
+    [CascadingParameter]
+    public bool IsLoggedIn { get; set; }
+
+    private Guid? sellerId;
+    private string SellerName { get; set; } = "Store";
+    private CatalogResult? catalogResult;
+
+    static IEnumerable<int> GetVisiblePageIndexes(CatalogResult result)
+        => Enumerable.Range(1, (int)Math.Ceiling(1.0 * result.Count / PageSize));
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(SellerIdString) || !Guid.TryParse(SellerIdString, out var parsedId))
+        {
+            return;
+        }
+
+        sellerId = parsedId;
+
+        // Set seller name (in a real app, would fetch from API)
+        if (sellerId == Guid.Empty)
+        {
+            SellerName = "Official Store";
+        }
+        else
+        {
+            SellerName = sellerId.Value.ToString().Substring(0, 8).ToUpper();
+        }
+
+        await LoadProducts();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (sellerId.HasValue)
+        {
+            await LoadProducts();
+        }
+    }
+
+    private async Task LoadProducts()
+    {
+        if (!sellerId.HasValue)
+            return;
+
+        catalogResult = await CatalogService.GetCatalogItems(
+            Page.GetValueOrDefault(1) - 1,
+            PageSize,
+            null,
+            null,
+            [sellerId.Value]);
+    }
+
+    private string GetPageUri(int pageIndex)
+    {
+        return Nav.GetUriWithQueryParameter("page", pageIndex == 1 ? null : pageIndex);
+    }
+}
