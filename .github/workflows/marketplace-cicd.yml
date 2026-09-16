@@ -124,6 +124,9 @@ jobs:
       - name: Clean build artifacts
         run: dotnet clean eShop.Web.slnf --configuration Release || true
 
+      - name: Clean Aspire cache
+        run: rm -rf .aspire ~/.aspire || true
+
       - name: Install Aspire CLI
         run: dotnet tool install -g Aspire.Cli --version '${{ env.ASPIRE_CLI_VERSION }}'
 
