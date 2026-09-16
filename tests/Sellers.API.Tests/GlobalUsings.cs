@@ -1,0 +1,16 @@
+global using System;
+global using System.Threading;
+global using System.Threading.Tasks;
+global using System.Collections.Generic;
+global using Microsoft.VisualStudio.TestTools.UnitTesting;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.Extensions.Logging;
+global using NSubstitute;
+global using System.Security.Claims;
+global using eShop.Sellers.API.Controllers;
+global using eShop.Sellers.API.Infrastructure;
+global using eShop.Sellers.API.Model;
+global using eShop.Sellers.API.Requests;
+global using eShop.Sellers.API.Responses;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.AspNetCore.Http;
