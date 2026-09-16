@@ -62,10 +62,10 @@
 
 ## 9. Sellers.API: Payout Ledger Management
 
-- [ ] 9.1 Add SellerPayoutRepository with methods: CreatePayout(), GetPayoutsBySeller(), UpdatePayoutStatus() and verify repository methods work with test data
-- [ ] 9.2 Implement integration event handler for OrderCreatedIntegrationEvent that creates SellerPayout entries (one per seller per order) and verify handler creates correct entries
-- [ ] 9.3 Register event handler in Sellers.API service configuration and verify handler is invoked when orders are created
-- [ ] 9.4 Create unit tests for payout ledger creation (single seller, multi-seller orders, commission calculations) and verify tests pass
+- [x] 9.1 Add SellerPayoutRepository with methods: CreatePayout(), GetPayoutsBySeller(), UpdatePayoutStatus() and verify repository methods work with test data
+- [x] 9.2 Implement integration event handler for OrderCreatedIntegrationEvent that creates SellerPayout entries (one per seller per order) and verify handler creates correct entries
+- [x] 9.3 Register event handler in Sellers.API service configuration and verify handler is invoked when orders are created
+- [x] 9.4 Create unit tests for payout ledger creation (single seller, multi-seller orders, commission calculations) and verify tests pass
 
 ## 10. Sellers.API: Seller-Specific Order & Payout Visibility
 
