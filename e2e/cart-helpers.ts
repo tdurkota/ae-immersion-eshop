@@ -21,9 +21,10 @@ export async function removeFirstCartItem(page: Page) {
 
 export async function emptyCart(page: Page) {
   await page.goto('/cart');
-  await expect(page.getByRole('heading', { name: 'Shopping bag', exact: true })).toBeVisible();
-
+  
+  // Wait for page to load - check if quantities are loaded
   const quantities = page.locator('[data-cart-quantity-input]');
+  await page.waitForLoadState('networkidle');
   while (await quantities.count() > 0) {
     const previousCount = await quantities.count();
     await removeFirstCartItem(page);

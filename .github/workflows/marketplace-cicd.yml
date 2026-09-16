@@ -30,6 +30,9 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Clean build artifacts
+        run: dotnet clean eShop.Web.slnf --configuration Release || true
+
       - name: Restore dependencies
         run: dotnet restore eShop.Web.slnf
 
@@ -46,7 +49,7 @@ jobs:
 
       # - name: Upload test results
       #   if: always()
-      #   uses: actions/upload-artifact@v3
+      #   uses: actions/upload-artifact@v4
       #   with:
       #     name: test-results
       #     path: '**/test-results.trx'
@@ -101,7 +104,8 @@ jobs:
       contents: read
     environment:
       name: staging
-      url: https://eshop-staging.azurecontainerapps.io
+    outputs:
+      staging-url: ${{ steps.get-staging-url.outputs.url }}
 
     steps:
       - name: Checkout code
@@ -111,6 +115,17 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Clean build artifacts
+        run: dotnet clean eShop.Web.slnf --configuration Release || true
+
+      - name: Clean Aspire cache
+        run: rm -rf .aspire ~/.aspire || true
 
       - name: Install Aspire CLI
         run: dotnet tool install -g Aspire.Cli --version '${{ env.ASPIRE_CLI_VERSION }}'
@@ -130,75 +145,68 @@ jobs:
           ASPIRE_ALLOW_UNSECURED_TRANSPORT: "true"
         continue-on-error: false
 
-  deploy-production:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [ build-and-test ]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    permissions:
-      contents: read
-    environment:
-      name: production
-      url: https://eshop-marketplace.azurecontainerapps.io
-    concurrency:
-      group: production-deployment
-      cancel-in-progress: false
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Install Aspire CLI
-        run: dotnet tool install -g Aspire.Cli --version '${{ env.ASPIRE_CLI_VERSION }}'
-
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Deploy to Azure Container Apps (Production)
+      - name: Get Staging URL
+        id: get-staging-url
         run: |
-          aspire deploy --non-interactive --from-module ${{ secrets.ASPIRE_MODULE_PATH }}
-        env:
-          Azure__SubscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          Azure__ResourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }}
-          Azure__Location: ${{ secrets.AZURE_LOCATION }}
-          ASPIRE_ALLOW_UNSECURED_TRANSPORT: "true"
-        continue-on-error: false
+          # Get the webapp FQDN from deployed Container App
+          WEBAPP_URL=$(az containerapp show --name webapp --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --query properties.configuration.ingress.fqdn -o tsv)
+          if [ -z "$WEBAPP_URL" ]; then
+            echo "ERROR: Failed to retrieve webapp FQDN"
+            exit 1
+          fi
+          echo "url=https://$WEBAPP_URL" >> $GITHUB_OUTPUT
+          echo "✅ Staging URL: https://$WEBAPP_URL"
 
-  # TODO: Enable E2E tests after initial deployment is working
+  # TODO: Enable E2E tests after resolving cart page issues
   # e2e-tests:
   #   name: E2E Tests (Marketplace Flow)
   #   runs-on: ubuntu-latest
   #   needs: [ deploy-staging ]
-  #   if: github.ref == 'refs/heads/develop'
+  #   # if: github.ref == 'refs/heads/develop'
   #   
   #   steps:
   #     - name: Checkout code
   #       uses: actions/checkout@v4
-
+  # 
   #     - name: Setup Node.js
   #       uses: actions/setup-node@v4
   #       with:
   #         node-version: '20'
   #         cache: 'npm'
-
+  # 
+  #     - name: Azure Login
+  #       uses: azure/login@v1
+  #       with:
+  #         creds: ${{ secrets.AZURE_CREDENTIALS }}
+  # 
+  #     - name: Get Staging URL
+  #       id: get-staging-url
+  #       run: |
+  #         # Get the webapp FQDN from deployed Container App
+  #         WEBAPP_URL=$(az containerapp show --name webapp --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --query properties.configuration.ingress.fqdn -o tsv)
+  #         if [ -z "$WEBAPP_URL" ]; then
+  #           echo "ERROR: Failed to retrieve webapp FQDN"
+  #           exit 1
+  #         fi
+  #         echo "url=https://$WEBAPP_URL" >> $GITHUB_OUTPUT
+  #         echo "✅ Staging URL: https://$WEBAPP_URL"
+  # 
+  #     - name: Install npm dependencies
+  #       run: npm ci
+  # 
   #     - name: Install Playwright dependencies
   #       run: npx playwright install --with-deps
-
+  # 
   #     - name: Run E2E tests
   #       run: npm run test:e2e
   #       env:
-  #         STAGING_URL: https://eshop-staging.azurecontainerapps.io
-
+  #         PLAYWRIGHT_BASE_URL: ${{ steps.get-staging-url.outputs.url || needs.deploy-staging.outputs.staging-url }}
+  #         USERNAME1: bob
+  #         PASSWORD: Pass123$
+  # 
   #     - name: Upload E2E test results
   #       if: always()
-  #       uses: actions/upload-artifact@v3
+  #       uses: actions/upload-artifact@v4
   #       with:
   #         name: e2e-test-results
   #         path: test-results/

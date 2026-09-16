@@ -23,9 +23,10 @@ chmod +x ./scripts/setup-azure-and-github.sh
 - ✅ Azure authentication
 - ✅ Resource group creation
 - ✅ Service principal creation
-- ✅ Azure Container Registry (ACR) creation
 - ✅ .env.local file generation
-- ✅ GitHub secrets configuration (Azure + ACR)
+- ✅ GitHub secrets configuration (Azure only)
+
+> **Note:** Azure Container Registry (ACR) is **automatically provisioned by Aspire** during deployment. No manual ACR setup is required.
 
 **Prerequisites:**
 - Azure CLI installed
@@ -41,9 +42,6 @@ chmod +x ./scripts/setup-azure-and-github.sh
   - `AZURE_SUBSCRIPTION_ID`
   - `AZURE_RESOURCE_GROUP`
   - `AZURE_LOCATION`
-  - `ACR_REGISTRY_NAME`
-  - `ACR_USERNAME`
-  - `ACR_PASSWORD`
   - `ASPIRE_MODULE_PATH`
 
 **Time:** ~2-3 minutes
@@ -89,11 +87,13 @@ chmod +x ./scripts/setup-azure-and-github.sh
    - Resource Group Name
    - Azure Location
    - Service Principal Name
-   - ACR Registry Name
-4. Creates Azure resources (or uses existing)
-5. Creates ACR and gets credentials
-6. Generates `.env.local` with all credentials
-7. Sets GitHub secrets (Azure + ACR)
+4. Creates Azure resources (or uses existing):
+   - Resource Group
+   - Service Principal with contributor role
+5. Generates `.env.local` with Azure credentials
+6. Sets GitHub secrets (Azure credentials + Aspire config)
+
+> **Important:** Azure Container Registry (ACR) will be automatically created by Aspire during the first deployment. You do not need to manually create it.
 
 ### Step 2: Configure Linear Integration
 

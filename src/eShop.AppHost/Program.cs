@@ -10,10 +10,10 @@ var isCi = builder.Environment.EnvironmentName == "CI" ||
                StringComparison.OrdinalIgnoreCase);
 
 builder.AddForwardedHeaders();
-if (!isCi)
-{
-    builder.AddAzureContainerAppEnvironment("aca");
-}
+
+// Always add Azure Container App environment for deployment
+// CI environment disables HTTPS, not Azure deployment
+builder.AddAzureContainerAppEnvironment("aca");
 
 var redis = builder.AddRedis("redis");
 var rabbitMq = builder.AddRabbitMQ("eventbus")
