@@ -1,6 +1,7 @@
 ﻿namespace eShop.Ordering.API.Application.Commands;
 
 using eShop.Ordering.Domain.AggregatesModel.OrderAggregate;
+using eShop.Ordering.Application.Services;
 
 // Regular CommandHandler
 public class CreateOrderCommandHandler
@@ -11,19 +12,22 @@ public class CreateOrderCommandHandler
     private readonly IMediator _mediator;
     private readonly IOrderingIntegrationEventService _orderingIntegrationEventService;
     private readonly ILogger<CreateOrderCommandHandler> _logger;
+    private readonly CommissionService _commissionService;
 
     // Using DI to inject infrastructure persistence Repositories
     public CreateOrderCommandHandler(IMediator mediator,
         IOrderingIntegrationEventService orderingIntegrationEventService,
         IOrderRepository orderRepository,
         IIdentityService identityService,
-        ILogger<CreateOrderCommandHandler> logger)
+        ILogger<CreateOrderCommandHandler> logger,
+        CommissionService commissionService)
     {
         _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
         _identityService = identityService ?? throw new ArgumentNullException(nameof(identityService));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _orderingIntegrationEventService = orderingIntegrationEventService ?? throw new ArgumentNullException(nameof(orderingIntegrationEventService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _commissionService = commissionService ?? throw new ArgumentNullException(nameof(commissionService));
     }
 
     public async Task<bool> Handle(CreateOrderCommand message, CancellationToken cancellationToken)
@@ -48,7 +52,43 @@ public class CreateOrderCommandHandler
 
         _orderRepository.Add(order);
 
-        return await _orderRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+        var result = await _orderRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+
+        if (result)
+        {
+            // Publish OrderCreatedIntegrationEvent with seller info for each line item
+            var lineItems = order.OrderItems.Select((orderItem, index) =>
+            {
+                var grossAmount = (orderItem.UnitPrice * orderItem.Units) - orderItem.Discount;
+                var commissionAmount = _commissionService.CalculateCommission(grossAmount, orderItem.CommissionRate);
+                var sellerAmount = _commissionService.CalculateSellerAmount(grossAmount, orderItem.CommissionRate);
+
+                return new OrderCreatedLineItem(
+                    orderLineItemId: index, // Using zero-based index as the line item ID
+                    sellerId: orderItem.SellerId,
+                    productId: orderItem.ProductId,
+                    productName: orderItem.ProductName,
+                    unitPrice: orderItem.UnitPrice,
+                    units: orderItem.Units,
+                    discount: orderItem.Discount,
+                    grossAmount: grossAmount,
+                    commissionRate: orderItem.CommissionRate,
+                    commissionAmount: commissionAmount,
+                    sellerAmount: sellerAmount
+                );
+            }).ToList();
+
+            var orderCreatedIntegrationEvent = new OrderCreatedIntegrationEvent(
+                orderId: order.Id,
+                buyerName: message.UserName,
+                buyerIdentityGuid: message.UserId,
+                orderLineItems: lineItems
+            );
+
+            await _orderingIntegrationEventService.AddAndSaveEventAsync(orderCreatedIntegrationEvent);
+        }
+
+        return result;
     }
 }
 

@@ -1,6 +1,7 @@
 ﻿namespace eShop.Ordering.API.Application.Queries;
 
 using eShop.Ordering.API.Application.Services;
+using eShop.Ordering.Application.Services;
 
 public class OrderQueries(OrderingContext context)
     : IOrderQueries
