@@ -161,9 +161,248 @@ Use [`aspire publish`](https://aspire.dev/reference/cli/commands/aspire-publish/
 
 When you no longer need the deployment, run [`aspire destroy`](https://aspire.dev/reference/cli/commands/aspire-destroy/). This deletes the entire configured resource group, including resources that Aspire did not create, so review the target carefully before confirming.
 
+## Third-Party Seller Marketplace
+
+The eShop application includes a built-in third-party seller marketplace feature, allowing independent sellers to list and sell products alongside platform-managed offerings.
+
+### Seller Architecture
+
+The marketplace implementation consists of:
+
+- **Sellers.API**: Dedicated microservice for seller registration, profile management, and payout tracking
+- **Extended Identity.API**: Support for seller roles and seller_id JWT claims
+- **Extended Catalog.API**: Seller attribution on products and seller-specific product management
+- **Extended Ordering.API**: Commission tracking and multi-seller order support
+- **Event-Driven Payout Ledger**: Automatic payout entry creation on order completion
+
+### Getting Started as a Seller
+
+#### Step 1: Register as a Seller
+
+Send a POST request to the Sellers.API to register:
+
+```bash
+curl -X POST https://localhost:5001/api/sellers \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Premium Electronics",
+    "email": "seller@example.com",
+    "description": "High-quality electronics and accessories",
+    "phoneNumber": "+1-555-0123",
+    "commissionRate": 0.15
+  }'
+```
+
+**Response:**
+```json
+{
+  "sellerId": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "Premium Electronics",
+  "email": "seller@example.com",
+  "description": "High-quality electronics and accessories",
+  "phoneNumber": "+1-555-0123",
+  "commissionRate": 0.15,
+  "status": "Active",
+  "createdAt": "2026-09-16T12:00:00Z",
+  "updatedAt": "2026-09-16T12:00:00Z"
+}
+```
+
+**Important:**
+- `sellerId`: Save this value; use it in all subsequent API calls
+- `commissionRate`: A decimal between 0 and 1 (e.g., 0.15 = 15% commission to the platform)
+- `status`: Initially "Active"; can be set to "Suspended" by admins
+
+#### Step 2: Authenticate as a Seller
+
+Use your seller credentials to log in via Identity.API to get a JWT token:
+
+```bash
+curl -X POST https://localhost:5000/api/identity/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "seller@example.com",
+    "password": "your-secure-password"
+  }'
+```
+
+**Response:**
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "sellerId": "550e8400-e29b-41d4-a716-446655440000",
+  "role": "seller"
+}
+```
+
+Store the `accessToken` and use it in the `Authorization: Bearer <token>` header for subsequent requests.
+
+#### Step 3: View Your Seller Profile
+
+Retrieve your seller profile:
+
+```bash
+curl -X GET https://localhost:5001/api/sellers/550e8400-e29b-41d4-a716-446655440000 \
+  -H "Authorization: Bearer <your-token>"
+```
+
+**Authorized response (private fields visible):**
+```json
+{
+  "sellerId": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "Premium Electronics",
+  "description": "High-quality electronics and accessories",
+  "email": "seller@example.com",
+  "phoneNumber": "+1-555-0123",
+  "bankAccountInfo": "...",
+  "commissionRate": 0.15,
+  "status": "Active",
+  "createdAt": "2026-09-16T12:00:00Z",
+  "updatedAt": "2026-09-16T12:00:00Z"
+}
+```
+
+### Managing Products
+
+Sellers can list products in the catalog through Catalog.API. Each product is tagged with the seller's ID, allowing them to manage their own inventory.
+
+**Add a product:**
+```bash
+curl -X POST https://localhost:5002/api/sellers/550e8400-e29b-41d4-a716-446655440000/products \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <your-token>" \
+  -d '{
+    "name": "USB-C Cable 10ft",
+    "description": "High-quality, certified USB-C cable",
+    "price": 12.99,
+    "stock": 100,
+    "pictureUrl": "https://cdn.example.com/cable.jpg"
+  }'
+```
+
+**View your products:**
+```bash
+curl -X GET https://localhost:5002/api/sellers/550e8400-e29b-41d4-a716-446655440000/products \
+  -H "Authorization: Bearer <your-token>"
+```
+
+### Tracking Orders and Earnings
+
+#### View Your Orders
+
+Sellers can view all orders containing their products:
+
+```bash
+curl -X GET "https://localhost:5001/api/sellers/550e8400-e29b-41d4-a716-446655440000/orders?status=Pending&page=1&pageSize=20" \
+  -H "Authorization: Bearer <your-token>"
+```
+
+**Response:**
+```json
+{
+  "orders": [
+    {
+      "orderId": "order-12345",
+      "customerId": "cust-67890",
+      "orderDate": "2026-09-16T12:30:00Z",
+      "status": "Processing",
+      "items": [
+        {
+          "lineItemId": "lineitem-1",
+          "productId": "prod-1",
+          "productName": "USB-C Cable 10ft",
+          "quantity": 2,
+          "unitPrice": 12.99,
+          "grossTotal": 25.98,
+          "commissionRate": 0.15,
+          "commissionAmount": 3.90,
+          "sellerAmount": 22.08
+        }
+      ]
+    }
+  ],
+  "page": 1,
+  "pageSize": 20,
+  "total": 1
+}
+```
+
+#### View Payout Ledger
+
+Sellers can track their earnings and payout status:
+
+```bash
+curl -X GET "https://localhost:5001/api/sellers/550e8400-e29b-41d4-a716-446655440000/payouts?status=Pending" \
+  -H "Authorization: Bearer <your-token>"
+```
+
+**Response:**
+```json
+{
+  "payouts": [
+    {
+      "payoutId": "payout-1",
+      "orderId": "order-12345",
+      "lineItemId": "lineitem-1",
+      "grossAmount": 25.98,
+      "commissionAmount": 3.90,
+      "sellerAmount": 22.08,
+      "status": "Pending",
+      "createdAt": "2026-09-16T12:30:00Z",
+      "paidAt": null
+    }
+  ],
+  "page": 1,
+  "pageSize": 20,
+  "total": 1
+}
+```
+
+#### View Payout Summary
+
+Get a quick overview of your earnings:
+
+```bash
+curl -X GET https://localhost:5001/api/sellers/550e8400-e29b-41d4-a716-446655440000/payouts/summary \
+  -H "Authorization: Bearer <your-token>"
+```
+
+**Response:**
+```json
+{
+  "sellerId": "550e8400-e29b-41d4-a716-446655440000",
+  "totalEarned": 542.50,
+  "totalPending": 127.50,
+  "totalProcessed": 0.00,
+  "totalPaid": 415.00,
+  "pendingPayoutCount": 3,
+  "lastPaymentDate": "2026-09-15T10:30:00Z"
+}
+```
+
+### Multi-Seller Checkout
+
+Customers can purchase products from multiple sellers in a single checkout. The platform:
+- Collects payment once from the customer
+- Splits revenue based on seller commission rates
+- Creates separate payout entries for each seller
+- Provides each seller visibility into their portion of the order
+
+### API Documentation
+
+Complete API documentation is available in the Swagger UI:
+
+**When running locally:**
+- Sellers.API Swagger: https://localhost:5001/swagger/ui
+- Catalog.API Swagger: https://localhost:5002/swagger/ui
+- Ordering.API Swagger: https://localhost:5003/swagger/ui
+
+Each endpoint includes request/response examples and authorization requirements.
+
 ## Contributing
 
 For more information on contributing to this repo, read [the contribution documentation](./CONTRIBUTING.md) and [the Code of Conduct](CODE-OF-CONDUCT.md).
+
 
 ### Sample data
 

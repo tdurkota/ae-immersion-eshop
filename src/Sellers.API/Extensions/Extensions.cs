@@ -6,5 +6,6 @@ internal static class Extensions
     {
         builder.AddNpgsqlDbContext<SellersContext>("eshopdb");
         builder.Services.AddMigration<SellersContext>();
+        builder.Services.AddScoped<ISellerPayoutRepository, SellerPayoutRepository>();
     }
 }
